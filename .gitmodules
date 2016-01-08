@@ -1,0 +1,3 @@
+[submodule "ext/nanpy-firmware"]
+	path = ext/nanpy-firmware
+	url = git@github.com:nanpy/nanpy-firmware.git
