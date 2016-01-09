@@ -11,6 +11,7 @@ class Broadcaster(object):
     def __init__(self):
         super(Broadcaster, self).__init__()
         self.__registry = {}
+        self.__logger = logging.getLogger(__name__)
 
     def register(self, target_actor, broadcast_class='all'):
         """Registers a target actor to listen for all messages of the specified broadcast class.
@@ -23,7 +24,7 @@ class Broadcaster(object):
         if broadcast_class not in self.__registry:
             self.__registry[broadcast_class] = set()
         self.__registry[broadcast_class].add(target_actor)
-        logging.debug("%s: registering in %s: %s", self, broadcast_class, target_actor)
+        self.__logger.debug("%s: registering in %s: %s", self, broadcast_class, target_actor)
     def deregister(self, target_actor, broadcast_class='all'):
         """Deregisters a previously-registered target actor from the specified broadcast class.
 
@@ -33,14 +34,14 @@ class Broadcaster(object):
         """
         try:
             self.__registry[broadcast_class].remove(target_actor)
-            logging.debug("%s: deregistering from %s: %s", self, broadcast_class, target_actor)
+            self.__logger.debug("%s: deregistering from %s: %s", self, broadcast_class, target_actor)
         except (KeyError, ValueError):
             raise ValueError("No actor is currently registered to listen for messages of "
                              "broadcast class \"{}\"".format(broadcast_class))
 
     def broadcast(self, message, broadcast_class='all'):
         """Broadcasts a message to all actors registered to for the specified broadcast class."""
-        logging.debug("%s: broadcasting to %s: %s", self, broadcast_class, message)
+        self.__logger.debug("%s: broadcasting to %s: %s", self, broadcast_class, message)
         for actor in self.__registry[broadcast_class]:
             actor.tell(message)
 
@@ -66,13 +67,14 @@ class Producer(pykka.ThreadingActor):
         super(Producer, self).__init__()
         self.interval = interval
         self.producing = False
+        self.__logger = logging.getLogger(__name__)
 
     def on_receive(self, message):
-        logging.debug("Producer %s: received %s", self, message)
+        self.__logger.debug("Producer %s: received %s", self, message)
         if not self.producing and message.get('command') == 'start producing':
             self.producing = True
             if 'interval' in message:
-                logging.debug("Producer %s: setting interval to %s", self, message['interval'])
+                self.__logger.debug("Producer %s: setting interval to %s", self, message['interval'])
                 self.interval = message['interval']
             self._on_start_producing()
             self._produce()

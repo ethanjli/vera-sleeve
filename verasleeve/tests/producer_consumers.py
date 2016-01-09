@@ -34,37 +34,41 @@ class Printer(pykka.ThreadingActor):
     def __init__(self, name):
         super(Printer, self).__init__()
         self.__name = name
+        self.__logger = logging.getLogger(__name__)
 
     def __str__(self):
         return "{} ({})".format(self.__class__.__name__, self.__name)
 
     def on_receive(self, message):
-        logging.info("%s: received %s", self, message)
+        self.__logger.info("%s: received %s", self, message)
 
 def produce_consume():
     """Prints data to the console using a producer and consumers."""
+    logger = logging.getLogger(__name__)
+
     even_consumer = Printer.start("Even Printer")
     odd_consumer = Printer.start("Odd Printer")
     producer = NumberGenerator.start("RNG")
     producer.proxy().register(even_consumer, 'even number')
     producer.proxy().register(odd_consumer, 'odd number')
 
-    logging.info("Producing for 2 seconds at an interval of 0.1 seconds...")
+    logger.info("Producing for 2 seconds at an interval of 0.1 seconds...")
     producer.tell({'command': 'start producing', 'interval': 0.1})
     time.sleep(2)
     producer.tell({'command': 'stop producing'})
     time.sleep(2)
-    logging.info("Producing for 2 seconds at an interval of 0.5 seconds...")
+    logger.info("Producing for 2 seconds at an interval of 0.5 seconds...")
     producer.tell({'command': 'start producing', 'interval': 0.5})
     time.sleep(2)
     producer.tell({'command': 'stop producing'})
     time.sleep(2)
-    logging.info("Producing for 2 seconds...")
+    logger.info("Producing for 2 seconds...")
     producer.tell({'command': 'start producing'})
     time.sleep(2)
     producer.tell({'command': 'stop producing'})
-    logging.info("Quitting")
-    pykka.ActorRegistry.stop_all()
+    logger.info("Quitting")
+
+    pykka.ActorRegistry.stop_all() # stop actors in LIFO order
 
 if __name__ == "__main__":
     produce_consume()
