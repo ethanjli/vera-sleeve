@@ -3,7 +3,7 @@
 import nanpy
 
 # Device parameters
-FLUID_SENSOR_PORT = "A0"
+FLUID_SENSOR_PORT = 'A0'
 
 class Leg(object):
     """Models the Arduino controller of the leg model test fixture."""
