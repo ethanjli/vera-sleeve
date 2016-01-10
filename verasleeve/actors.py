@@ -9,7 +9,7 @@ import pykka
 class Broadcaster(object):
     """Selectively broadcasts messages to registered actors."""
     def __init__(self):
-        super(Broadcaster, self).__init__()
+        super().__init__()
         self.__registry = {}
         self.__logger = logging.getLogger(__name__)
 
@@ -64,7 +64,7 @@ class Producer(pykka.ThreadingActor):
         _on_stop_producing: hook for cleanup to be done when the instance stops producing.
     """
     def __init__(self, interval=1):
-        super(Producer, self).__init__()
+        super().__init__()
         self.interval = interval
         self.producing = False
         self.__logger = logging.getLogger(__name__)

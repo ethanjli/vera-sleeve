@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO)
 class NumberGenerator(actors.Broadcaster, actors.Producer):
     """Generates random integers."""
     def __init__(self, name):
-        super(NumberGenerator, self).__init__()
+        super().__init__()
         self.__name = name
 
     def __str__(self):
@@ -32,7 +32,7 @@ class NumberGenerator(actors.Broadcaster, actors.Producer):
 class Printer(pykka.ThreadingActor):
     """Prints all messages it receives."""
     def __init__(self, name):
-        super(Printer, self).__init__()
+        super().__init__()
         self.__name = name
         self.__logger = logging.getLogger(__name__)
 
