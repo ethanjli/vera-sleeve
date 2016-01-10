@@ -2,9 +2,7 @@
 """Tests signal filtering."""
 # Python imports
 import sys
-import time
 import random
-from collections import deque
 
 # Dependency imports
 import numpy as np
@@ -34,7 +32,7 @@ def sine_wave(length, gaussian_noisiness=2, amplitude=50):
         yield (i, wave[i] + random.gauss(0, gaussian_noisiness))
 
 def stream(signal_generator):
-    """Continuously generates noisy data and filters it."""
+    """Continuously generates noisy data and filters it, then plots the results."""
     signal_length = 500
     filterer = signal.moving_filter(10)
 
@@ -54,18 +52,11 @@ def stream(signal_generator):
 
     graph = pg.plot()
     graph.addLegend()
-    raw_curve = graph.plot(signal_x, signal_y, pen='r', name="Raw (Noisy) Signal")
-    filtered_curve = graph.plot(filtered_x, filtered_y, pen='b', name="Filtered Signal")
-    #ax1.plot(signal_x, signal_y)
-    #ax1.set_title('Signal')
-    #ax1.set_ylim([-10, 110])
-    #ax2.plot(filtered_x, filtered_y)
-    #ax2.set_title('Filtered')
-    #plt.show()
-
+    graph.plot(signal_x, signal_y, pen='r', name="Raw (Noisy) Signal")
+    graph.plot(filtered_x, filtered_y, pen='b', name="Filtered Signal")
 
 if __name__ == "__main__":
     pg.setConfigOptions(antialias=True, background='w', foreground='k')
     stream(square_wave)
     stream(sine_wave)
-    pg.Qt.QtGui.QApplication.instance().exec_()
+    sys.exit(pg.Qt.QtGui.QApplication.instance().exec_())
