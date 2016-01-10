@@ -19,8 +19,8 @@ Some unit tests are designed for execution with the Arduino IDE and its Serial M
 * [Numpy](http://www.numpy.org/) for signal processing.
 * [Nanpy](https://nanpy.github.io/) for serial communication with the Arduino.
 * [Pykka](https://www.pykka.org/) for concurrency based on the Actor model.
-* [Matplotlib](https://matplotlib.org) for some tests. If you're not running any tests, you don't need it.
 * [PyQt5](https://riverbankcomputing.com/software/pyqt/intro) for graphical interfaces.
+* [PyQtGraph](http://www.pyqtgraph.org/) for plotting in graphical interfaces.
 
 ## Setup
 Install the required libraries using your preferred method. Then clone this repository, using the `--recursive` flag so that submodules are also cloned:

@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """Tests signal filtering."""
 # Python imports
+import sys
 import time
 import random
 from collections import deque
 
 # Dependency imports
 import numpy as np
-import matplotlib.pyplot as plt
+import pyqtgraph as pg
 
 # Package imports
 from .. import signal
@@ -51,16 +52,20 @@ def stream(signal_generator):
             filtered_x.append(filtered[0])
             filtered_y.append(filtered[1])
 
-    _, (ax1, ax2) = plt.subplots(2, sharex=True, sharey=True)
-    ax1.plot(signal_x, signal_y)
-    ax1.set_title('Signal')
-    ax1.set_ylim([-10, 110])
-    ax2.plot(filtered_x, filtered_y)
-    ax2.set_title('Filtered')
-    ax2.set_ylim([-10, 110])
-    plt.show()
+    graph = pg.plot()
+    graph.addLegend()
+    raw_curve = graph.plot(signal_x, signal_y, pen='r', name="Raw (Noisy) Signal")
+    filtered_curve = graph.plot(filtered_x, filtered_y, pen='b', name="Filtered Signal")
+    #ax1.plot(signal_x, signal_y)
+    #ax1.set_title('Signal')
+    #ax1.set_ylim([-10, 110])
+    #ax2.plot(filtered_x, filtered_y)
+    #ax2.set_title('Filtered')
+    #plt.show()
 
 
 if __name__ == "__main__":
+    pg.setConfigOptions(antialias=True, background='w', foreground='k')
     stream(square_wave)
     stream(sine_wave)
+    pg.Qt.QtGui.QApplication.instance().exec_()
