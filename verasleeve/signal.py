@@ -26,17 +26,18 @@ def moving_filter(max_samples=None, filterer=np.median):
         is None, the moving filter processes all samples.
 
     Sending:
-        Send a two-tuple of the sample number and  value into moving_filter to add that sample
-        to the signal for filtering.
+        Send a two-tuple of the sample number (or sample time) and value into moving_filter to add
+        that sample to the signal for filtering.
         Send a positive integer into moving_filter to reset the signal and set the filter to use
         that integer as the new value of max_samples
         Send None into moving_filter to reset the signal.
 
     Yielding:
         None: if the filter has not yet collected max_samples samples.
-        Otherwise, a two-tuple of the sample number for the filtered sample and the filtered result
-        (as computed by filterer) of the max_samples most recent samples. The sample number will
-        correspond to the sample number for the (max_samples / 2)th most recent sample.
+        Otherwise, a two-tuple of the sample number (or sample time) for the filtered sample and
+        the filtered result (as computed by filterer) of the max_samples most recent samples.
+        The sample number will correspond to the sample number for the (max_samples / 2)th most
+        recent sample.
     """
     signal_buffer = deque(maxlen=max_samples)
     sample_numbers = deque(maxlen=(max_samples // 2 + 1
