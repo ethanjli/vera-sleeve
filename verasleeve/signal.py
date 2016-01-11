@@ -15,14 +15,15 @@ def get_interpolator(x_y, left_limit, right_limit):
                                             left_limit, right_limit)[0]
 
 @coroutines.initialized_coroutine
-def moving_filter(max_samples, filterer=np.median):
+def moving_filter(max_samples=None, filterer=np.median):
     """A coroutine to filter a signal using its max_samples most recent samples.
     To initialize, assign to a variable and start using it - no need to call the next
     function on it or send in an initial None value.
 
     Arguments:
         max_samples: the window size over which to compute the filtered sample.
-        To make the filter exactly symmetric, set this to be an odd number.
+        To make the filter exactly symmetric, set this to be an odd number. If this
+        is None, the moving filter processes all samples.
 
     Sending:
         Send a two-tuple of the sample number and  value into moving_filter to add that sample
@@ -38,7 +39,8 @@ def moving_filter(max_samples, filterer=np.median):
         correspond to the sample number for the (max_samples / 2)th most recent sample.
     """
     signal_buffer = deque(maxlen=max_samples)
-    sample_numbers = deque(maxlen=(max_samples // 2 + 1))
+    sample_numbers = deque(maxlen=(max_samples // 2 + 1
+                                   if max_samples is not None else None))
     filtered = None
     while True:
         value = yield filtered
@@ -47,13 +49,16 @@ def moving_filter(max_samples, filterer=np.median):
             value = None
         if value is None: # reset the signal
             signal_buffer = deque(maxlen=max_samples)
-            sample_numbers = deque(maxlen=(max_samples // 2 + 1))
+            sample_numbers = deque(maxlen=(max_samples // 2 + 1
+                                           if max_samples is not None else None))
             filtered = None
         else:
             sample_numbers.append(value[0])
             signal_buffer.append(value[1])
             num_samples = len(signal_buffer)
-            if num_samples == max_samples:
+            if max_samples is None:
+                filtered = (sample_numbers[-1], filterer(signal_buffer))
+            elif num_samples == max_samples:
                 filtered = (sample_numbers[0], filterer(signal_buffer))
             else:
                 filtered = None

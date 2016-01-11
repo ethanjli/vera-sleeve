@@ -33,9 +33,9 @@ class SignalGenerator(actors.Broadcaster, actors.Producer):
 
 class Filterer(actors.Broadcaster, pykka.ThreadingActor):
     """Filters samples of a signal."""
-    def __init__(self, filter_width):
+    def __init__(self, filter_width=None, filterer=np.median):
         super().__init__()
-        self.filterer = signal.moving_filter(filter_width)
+        self.filterer = signal.moving_filter(filter_width, filterer)
 
     def on_receive(self, message):
         filtered = self.filterer.send((message['sample number'], message['sample']))
@@ -64,16 +64,22 @@ def stream(signal_generator):
     graph = pg.plot()
     graph.addLegend()
     signal_curve = graph.plot(pen='r', name="Raw (Noisy) Signal")
-    filtered_curve = graph.plot(pen='b', name="Filtered Signal")
+    filtered_curve = graph.plot(pen='b', name="Median Filtered Signal")
+    average_curve = graph.plot(pen='k', name="Moving Average of Signal")
 
     signal_curve_updater = CurveUpdater.start(signal_curve)
     signal_generator = SignalGenerator.start(signal_generator, 500)
     signal_generator.proxy().register(signal_curve_updater, 'signal')
 
     filtered_curve_updater = CurveUpdater.start(filtered_curve)
-    signal_filter = Filterer.start(10)
+    signal_filter = Filterer.start(filter_width=10)
     signal_generator.proxy().register(signal_filter, 'signal')
     signal_filter.proxy().register(filtered_curve_updater, 'filtered')
+
+    average_curve_updater = CurveUpdater.start(average_curve)
+    signal_average = Filterer.start(filterer=np.mean)
+    signal_generator.proxy().register(signal_average, 'signal')
+    signal_average.proxy().register(average_curve_updater, 'filtered')
 
     signal_generator.tell({'command': 'start producing', 'interval': 0.05})
 
