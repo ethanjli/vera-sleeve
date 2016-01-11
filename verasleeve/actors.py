@@ -6,6 +6,15 @@ import logging
 # Dependency imports
 import pykka
 
+class NamedActor(object):
+    """Actor with a name for printing."""
+    def __init__(self, name):
+        super().__init__()
+        self.__name = name
+
+    def __str__(self):
+        return "{} ({})".format(self.__class__.__name__, self.__name)
+
 class Broadcaster(object):
     """Selectively broadcasts messages to registered actors."""
     def __init__(self):
@@ -34,7 +43,8 @@ class Broadcaster(object):
         """
         try:
             self.__registry[broadcast_class].remove(target_actor)
-            self.__logger.debug("%s: deregistering from %s: %s", self, broadcast_class, target_actor)
+            self.__logger.debug("%s: deregistering from %s: %s", self, broadcast_class,
+                                target_actor)
         except (KeyError, ValueError):
             raise ValueError("No actor is currently registered to listen for messages of "
                              "broadcast class \"{}\"".format(broadcast_class))
@@ -74,7 +84,8 @@ class Producer(pykka.ThreadingActor):
         if not self.producing and message.get('command') == 'start producing':
             self.producing = True
             if 'interval' in message:
-                self.__logger.debug("Producer %s: setting interval to %s", self, message['interval'])
+                self.__logger.debug("Producer %s: setting interval to %s", self,
+                                    message['interval'])
                 self.interval = message['interval']
             self._on_start_producing()
             self._produce()
@@ -96,3 +107,13 @@ class Producer(pykka.ThreadingActor):
         pass
     def _on_stop_producing(self):
         pass
+
+class Printer(NamedActor, pykka.ThreadingActor):
+    """Logs all messages it receives at the INFO level."""
+    def __init__(self, name):
+        super().__init__(name)
+        self.__logger = logging.getLogger(__name__)
+
+    def on_receive(self, message):
+        self.__logger.info("%s: received %s", self, message)
+

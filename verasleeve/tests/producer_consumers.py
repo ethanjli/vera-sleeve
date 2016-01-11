@@ -13,14 +13,10 @@ from .. import actors
 
 logging.basicConfig(level=logging.INFO)
 
-class NumberGenerator(actors.Broadcaster, actors.Producer):
+class NumberGenerator(actors.NamedActor, actors.Broadcaster, actors.Producer):
     """Generates random integers."""
     def __init__(self, name):
-        super().__init__()
-        self.__name = name
-
-    def __str__(self):
-        return "{} ({})".format(self.__class__.__name__, self.__name)
+        super().__init__(name)
 
     def _on_produce(self):
         number = random.randint(0, 9)
@@ -29,25 +25,12 @@ class NumberGenerator(actors.Broadcaster, actors.Producer):
         else:
             self.broadcast({'number': number}, 'odd number')
 
-class Printer(pykka.ThreadingActor):
-    """Prints all messages it receives."""
-    def __init__(self, name):
-        super().__init__()
-        self.__name = name
-        self.__logger = logging.getLogger(__name__)
-
-    def __str__(self):
-        return "{} ({})".format(self.__class__.__name__, self.__name)
-
-    def on_receive(self, message):
-        self.__logger.info("%s: received %s", self, message)
-
 def produce_consume():
     """Prints data to the console using a producer and consumers."""
     logger = logging.getLogger(__name__)
 
-    even_consumer = Printer.start("Even Printer")
-    odd_consumer = Printer.start("Odd Printer")
+    even_consumer = actors.Printer.start("Even Printer")
+    odd_consumer = actors.Printer.start("Odd Printer")
     producer = NumberGenerator.start("RNG")
     producer.proxy().register(even_consumer, 'even number')
     producer.proxy().register(odd_consumer, 'odd number')

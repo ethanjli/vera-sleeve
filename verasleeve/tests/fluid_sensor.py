@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 """Tests the fluid sensor."""
 # Python imports
-import time
-
+import logging
 # Package imports
-from .. import leg
+from .. import actors, leg
+
+logging.basicConfig(level=logging.INFO)
 
 def stream():
     """Continuously prints the pin value on the fluid pressure sensor."""
-    leg_test = leg.Leg()
-
-    while True:
-        print(leg_test.get_fluid_pressure_sensor())
-        time.sleep(0.005)
+    printer = actors.Printer.start('Printer')
+    leg_monitor = leg.LegMonitor().start()
+    leg_monitor.proxy().register(printer, 'fluid pressure')
+    leg_monitor.tell({'command': 'start producing', 'interval': 0.01})
 
 if __name__ == "__main__":
     stream()
