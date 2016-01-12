@@ -2,6 +2,11 @@
 """Tests the fluid sensor."""
 # Python imports
 import logging
+import sys
+
+# Dependency imports
+import pykka
+
 # Package imports
 from .. import actors, leg
 
@@ -10,7 +15,11 @@ logging.basicConfig(level=logging.INFO)
 def stream():
     """Continuously prints the pin value on the fluid pressure sensor."""
     printer = actors.Printer.start('Printer')
-    leg_monitor = leg.LegMonitor().start()
+    try:
+        leg_monitor = leg.LegMonitor().start()
+    except RuntimeError:
+        pykka.ActorRegistry.stop_all() # stop actors in LIFO order
+        raise
     leg_monitor.proxy().register(printer, 'fluid pressure')
     leg_monitor.tell({'command': 'start producing', 'interval': 0.01})
 

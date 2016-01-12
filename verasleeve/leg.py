@@ -4,6 +4,7 @@ import time
 
 # Dependency imports
 import nanpy
+from serial.serialutil import SerialException
 
 # Package imports
 from verasleeve import actors
@@ -15,8 +16,11 @@ class Leg(object):
     """Models the Arduino controller of the leg model test fixture."""
     def __init__(self):
         super().__init__()
-        connection = nanpy.SerialManager()
-        self._board = nanpy.ArduinoApi(connection=connection)
+        try:
+            connection = nanpy.SerialManager()
+            self._board = nanpy.ArduinoApi(connection=connection)
+        except SerialException:
+            raise RuntimeError("Could not connect to the Arduino!") from None
 
     def get_fluid_pressure_sensor(self):
         return self._board.analogRead(FLUID_SENSOR_PORT)

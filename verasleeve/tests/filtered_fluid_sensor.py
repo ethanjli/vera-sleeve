@@ -58,7 +58,11 @@ def stream(update_interval, filter_width, max_samples):
     signal_filter = Filterer.start(filter_width=filter_width)
     signal_filter.proxy().register(filtered_curve_updater, 'fluid pressure')
 
-    leg_monitor = leg.LegMonitor().start()
+    try:
+        leg_monitor = leg.LegMonitor().start()
+    except RuntimeError:
+        pykka.ActorRegistry.stop_all() # stop actors in LIFO order
+        raise
     leg_monitor.proxy().register(signal_curve_updater, 'fluid pressure')
     leg_monitor.proxy().register(signal_filter, 'fluid pressure')
     leg_monitor.tell({'command': 'start producing', 'interval': update_interval})
