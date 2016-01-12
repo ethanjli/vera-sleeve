@@ -4,9 +4,10 @@ from collections import deque
 
 # Dependency imports
 import numpy as np
+import pykka
 
 # Package imports
-from verasleeve import coroutines
+from verasleeve import actors, coroutines
 
 def get_interpolator(x_y, left_limit, right_limit):
     """Returns an interpolating function given a tuple of 2-tuples of x and y values."""
@@ -63,4 +64,17 @@ def moving_filter(max_samples=None, filterer=np.median):
                 filtered = (sample_numbers[0], filterer(signal_buffer))
             else:
                 filtered = None
+
+class Filterer(actors.Broadcaster, pykka.ThreadingActor):
+    """Filters samples of a signal."""
+    def __init__(self, filter_width=None, filterer=np.median):
+        super().__init__()
+        self.filterer = moving_filter(filter_width, filterer)
+
+    def on_receive(self, message):
+        data_type = message['data']
+        filtered = self.filterer.send((message['time'], message[data_type]))
+        if filtered is not None:
+            self.broadcast({'time': filtered[0], 'data': data_type,
+                            data_type: filtered[1]}, data_type)
 

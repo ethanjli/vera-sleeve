@@ -16,18 +16,6 @@ from .. import actors, leg, signal
 
 logging.basicConfig(level=logging.INFO)
 
-class Filterer(actors.Broadcaster, pykka.ThreadingActor):
-    """Filters samples of a signal."""
-    def __init__(self, filter_width=None, filterer=np.median):
-        super().__init__()
-        self.filterer = signal.moving_filter(filter_width, filterer)
-
-    def on_receive(self, message):
-        filtered = self.filterer.send((message['time'], message['fluid pressure']))
-        if filtered is not None:
-            self.broadcast({'time': filtered[0], 'data': 'fluid pressure',
-                            'fluid pressure': filtered[1]}, 'fluid pressure')
-
 class CurveUpdater(pykka.ThreadingActor):
     """Updates a PyQtGraph curve with samples."""
     def __init__(self, curve, max_samples=None):
@@ -55,7 +43,7 @@ def stream(update_interval, filter_width, max_samples):
     signal_curve_updater = CurveUpdater.start(signal_curve, max_samples)
 
     filtered_curve_updater = CurveUpdater.start(filtered_curve, max_samples)
-    signal_filter = Filterer.start(filter_width=filter_width)
+    signal_filter = signal.Filterer.start(filter_width=filter_width)
     signal_filter.proxy().register(filtered_curve_updater, 'fluid pressure')
 
     try:

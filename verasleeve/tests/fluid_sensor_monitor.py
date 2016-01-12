@@ -12,7 +12,7 @@ from pyqtgraph.Qt import uic
 from pyqtgraph.Qt import QtGui
 
 # Package imports
-from .. import leg
+from .. import leg, signal
 from . import filtered_fluid_sensor
 
 _UI_LAYOUT_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'sensor_monitor.ui')
@@ -53,7 +53,7 @@ class SensorMonitor(QtGui.QMainWindow):
         filtered_curve_updater = filtered_fluid_sensor.CurveUpdater.start(filtered_curve,
                                                                           max_samples)
         filtered_label_updater = LabelUpdater.start(self.__ui.signalValue)
-        signal_filter = filtered_fluid_sensor.Filterer.start(filter_width)
+        signal_filter = signal.Filterer.start(filter_width)
         signal_filter.proxy().register(filtered_curve_updater, 'fluid pressure')
         signal_filter.proxy().register(filtered_label_updater, 'fluid pressure')
 

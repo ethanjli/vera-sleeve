@@ -25,22 +25,11 @@ class SignalGenerator(actors.Broadcaster, actors.Producer):
 
     def _on_produce(self):
         try:
-            (sample_number, sample) = next(self.signal_function)
-            self.broadcast({'sample number': sample_number, 'sample': sample}, 'signal')
+            (time, sample) = next(self.signal_function)
+            self.broadcast({'time': time, 'data': 'signal', 'signal': sample}, 'signal')
         except StopIteration:
             logging.info("Finished generating signal.")
             self.actor_ref.tell({'command': 'stop producing'})
-
-class Filterer(actors.Broadcaster, pykka.ThreadingActor):
-    """Filters samples of a signal."""
-    def __init__(self, filter_width=None, filterer=np.median):
-        super().__init__()
-        self.filterer = signal.moving_filter(filter_width, filterer)
-
-    def on_receive(self, message):
-        filtered = self.filterer.send((message['sample number'], message['sample']))
-        if filtered is not None:
-            self.broadcast({'sample number': filtered[0], 'sample': filtered[1]}, 'filtered')
 
 class CurveUpdater(pykka.ThreadingActor):
     """Updates a PyQtGraph curve with samples."""
@@ -52,9 +41,9 @@ class CurveUpdater(pykka.ThreadingActor):
 
     def on_receive(self, message):
         """Slot that updates the curves with the next sample."""
-        sample_number = message['sample number']
-        sample = message['sample']
-        self.curve_x.append(sample_number)
+        time = message['time']
+        sample = message['signal']
+        self.curve_x.append(time)
         self.curve_y.append(sample)
         self.curve.setData(self.curve_x, self.curve_y)
 
@@ -72,14 +61,14 @@ def stream(signal_generator):
     signal_generator.proxy().register(signal_curve_updater, 'signal')
 
     filtered_curve_updater = CurveUpdater.start(filtered_curve)
-    signal_filter = Filterer.start(filter_width=10)
+    signal_filter = signal.Filterer.start(filter_width=10)
     signal_generator.proxy().register(signal_filter, 'signal')
-    signal_filter.proxy().register(filtered_curve_updater, 'filtered')
+    signal_filter.proxy().register(filtered_curve_updater, 'signal')
 
     average_curve_updater = CurveUpdater.start(average_curve)
-    signal_average = Filterer.start(filterer=np.mean)
+    signal_average = signal.Filterer.start(filterer=np.mean)
     signal_generator.proxy().register(signal_average, 'signal')
-    signal_average.proxy().register(average_curve_updater, 'filtered')
+    signal_average.proxy().register(average_curve_updater, 'signal')
 
     signal_generator.tell({'command': 'start producing', 'interval': 0.05})
 
