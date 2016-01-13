@@ -30,11 +30,13 @@ class LegMonitor(actors.Broadcaster, actors.Producer):
     Periodically emits messages of the leg model's sensor readings.
 
     Public Messages:
-        Data:
-            Data messages also have a time entry holding the time since the producer started
+        Data (broadcasted):
+            Data messages have a time entry holding the time since the producer started
             emitting messages at which the data sample was recorded. Each data message is
             broadcast on the broadcast class corresponding to the type of data message,
             e.g. 'fluid pressure'.
+            The data entry specifies the type of data message, which is the key of the entry
+            holding the value of the data sample.
             fluid pressure: the reading from the fluid pressure sensor.
     """
     def __init__(self):

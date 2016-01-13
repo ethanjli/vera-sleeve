@@ -3,7 +3,6 @@
 # Python imports
 import sys
 import os
-import time
 
 # Dependency imports
 import pykka
@@ -12,8 +11,7 @@ from pyqtgraph.Qt import uic
 from pyqtgraph.Qt import QtGui
 
 # Package imports
-from .. import leg, signal
-from . import filtered_fluid_sensor
+from .. import leg, signal, plotting
 
 _UI_LAYOUT_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'sensor_monitor.ui')
 
@@ -42,15 +40,15 @@ class SensorMonitor(QtGui.QMainWindow):
     def __init_monitor(self, update_interval, filter_width, max_samples):
         graph = self.__ui.signalPlot.getPlotItem()
         graph.getViewBox().disableAutoRange(axis=pg.ViewBox.YAxis)
-        graph.getViewBox().setYRange(0, 1024)
+        graph.getViewBox().setYRange(50, 400)
         graph.addLegend()
         graph.setTitle("Fluid Pressure Sensor Reading")
         graph.setLabels(bottom="Time (s)", left="Pin Value (0-1024)")
         signal_curve = graph.plot(pen='r', name="Raw (Noisy) Signal")
         filtered_curve = graph.plot(pen='b', name="Median Filtered Signal")
 
-        signal_curve_updater = filtered_fluid_sensor.CurveUpdater.start(signal_curve, max_samples)
-        filtered_curve_updater = filtered_fluid_sensor.CurveUpdater.start(filtered_curve,
+        signal_curve_updater = plotting.CurveUpdater.start(signal_curve, max_samples)
+        filtered_curve_updater = plotting.CurveUpdater.start(filtered_curve,
                                                                           max_samples)
         filtered_label_updater = LabelUpdater.start(self.__ui.signalValue)
         signal_filter = signal.Filterer.start(filter_width)

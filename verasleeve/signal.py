@@ -66,7 +66,19 @@ def moving_filter(max_samples=None, filterer=np.median):
                 filtered = None
 
 class Filterer(actors.Broadcaster, pykka.ThreadingActor):
-    """Filters samples of a signal."""
+    """Filters samples of a signal.
+
+    Public Messages:
+        Data (received):
+            Data messages should have a time entry holding the time of the data sample,
+            corresponding to the x axis value.
+            The data entry should specify the key of the entry holding the value of the data
+            sample, corresponding to the y axis value.
+        Data (broadcasted):
+            Data messages have a time entry holding the time of the data sample.
+            The data entry specifies the key of the entry holding the value of the data sample.
+            The data sample will be a filtered value.
+    """
     def __init__(self, filter_width=None, filterer=np.median):
         super().__init__()
         self.filterer = moving_filter(filter_width, filterer)
