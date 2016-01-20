@@ -5,8 +5,7 @@ import sys
 import time
 
 # Dependency imports
-from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QTextEdit, QFileDialog
-from PyQt5.QtGui import QIcon
+from PyQt4.QtGui import QApplication, QMainWindow, QAction, QTextEdit, QFileDialog, QIcon
 
 class SimpleTextEditor(QMainWindow):
     def __init__(self):

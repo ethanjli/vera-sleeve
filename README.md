@@ -19,7 +19,7 @@ Some unit tests are designed for execution with the Arduino IDE and its Serial M
 * [Numpy](http://www.numpy.org/) for signal processing.
 * [Nanpy](https://nanpy.github.io/) for serial communication with the Arduino.
 * [Pykka](https://www.pykka.org/) for concurrency based on the Actor model.
-* [PyQt5](https://riverbankcomputing.com/software/pyqt/intro) for graphical interfaces.
+* [PyQt4](https://riverbankcomputing.com/software/pyqt/intro) for graphical interfaces.
 * [PyQtGraph](http://www.pyqtgraph.org/) for plotting in graphical interfaces.
 
 ## Setup
