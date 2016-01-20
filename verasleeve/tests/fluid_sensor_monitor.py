@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests creation of a simple GUI with PyQt."""
+"""Monitors the fluid pressure sensor reading."""
 # Python imports
 import sys
 import os
@@ -11,19 +11,9 @@ from pyqtgraph.Qt import uic
 from pyqtgraph.Qt import QtGui
 
 # Package imports
-from .. import leg, signal, plotting
+from .. import leg, signal, plotting, gui
 
 _UI_LAYOUT_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'sensor_monitor.ui')
-
-class LabelUpdater(pykka.ThreadingActor):
-    """Updates a Qt label with sample data."""
-    def __init__(self, label):
-        super().__init__()
-        self.label = label
-
-    def on_receive(self, message):
-        """Slot that updates the text label with the next sample."""
-        self.label.setText("{}: {}".format(message['data'], message[message['data']]))
 
 class SensorMonitor(QtGui.QMainWindow):
     def __init__(self, update_interval, filter_width, max_samples):
@@ -50,7 +40,7 @@ class SensorMonitor(QtGui.QMainWindow):
         signal_curve_updater = plotting.CurveUpdater.start(signal_curve, max_samples)
         filtered_curve_updater = plotting.CurveUpdater.start(filtered_curve,
                                                                           max_samples)
-        filtered_label_updater = LabelUpdater.start(self.__ui.signalValue)
+        filtered_label_updater = gui.LabelUpdater.start(self.__ui.signalValue)
         signal_filter = signal.Filterer.start(filter_width)
         signal_filter.proxy().register(filtered_curve_updater, 'fluid pressure')
         signal_filter.proxy().register(filtered_label_updater, 'fluid pressure')
