@@ -17,6 +17,7 @@ _UI_LAYOUT_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'leg
 class LegMonitorPanel(QtGui.QMainWindow):
     def __init__(self, update_interval, filter_width, max_samples):
         super().__init__()
+        self.update_interval = update_interval
         self.__ui = uic.loadUi(_UI_LAYOUT_PATH)
         self.__ui.show()
         self.__init_window()
@@ -24,11 +25,11 @@ class LegMonitorPanel(QtGui.QMainWindow):
         self.__init_labels()
         self.__init_updaters(max_samples)
         self.__init_filters(filter_width)
-        self.__init_monitoring(update_interval)
 
     def __init_window(self):
         # Actions
         self.__ui.actionExit.triggered.connect(QtGui.QApplication.instance().quit)
+        self.__ui.actionConnect.triggered.connect(self.__init_monitoring)
 
     def __init_graphs(self):
         self.__graphs = {
@@ -79,7 +80,7 @@ class LegMonitorPanel(QtGui.QMainWindow):
             filterer.proxy().register(self.__filtered_curve_updaters[graph_name], graph_name)
             filterer.proxy().register(self.__filtered_label_updaters[graph_name], graph_name)
 
-    def __init_monitoring(self, update_interval):
+    def __init_monitoring(self):
         try:
             monitor = leg.LegMonitor().start()
         except RuntimeError:
@@ -88,7 +89,8 @@ class LegMonitorPanel(QtGui.QMainWindow):
         for graph_name in self.__graphs.keys():
             monitor.proxy().register(self.__raw_curve_updaters[graph_name], graph_name)
             monitor.proxy().register(self.__filterers[graph_name], graph_name)
-        monitor.tell({'command': 'start producing', 'interval': update_interval})
+        monitor.tell({'command': 'start producing', 'interval': self.update_interval})
+        self.__ui.actionConnect.setDisabled(True)
 
 if __name__ == "__main__":
     pg.setConfigOptions(antialias=True, background='w', foreground='k')

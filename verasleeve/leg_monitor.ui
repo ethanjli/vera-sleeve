@@ -14,95 +14,178 @@
    <string>Sensor Monitor</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout">
+   <layout class="QVBoxLayout" name="verticalLayout" stretch="33,66">
     <item>
-     <widget class="PlotWidget" name="fluidPlot"/>
-    </item>
-    <item>
-     <widget class="QLabel" name="fluidValue">
-      <property name="text">
-       <string>fluid sensor: uninitialized</string>
+     <widget class="QFrame" name="frame">
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
       </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QLabel" name="fluidValue">
+         <property name="text">
+          <string>fluid sensor: uninitialized</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="PlotWidget" name="fluidPlot"/>
+       </item>
+      </layout>
      </widget>
     </item>
     <item>
-     <widget class="PlotWidget" name="sensor0Plot"/>
-    </item>
-    <item>
-     <widget class="QLabel" name="sensor0Value">
-      <property name="text">
-       <string>surface sensor 0: uninitialized</string>
+     <widget class="QGroupBox" name="groupBox">
+      <property name="title">
+       <string>surface sensors</string>
       </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="PlotWidget" name="sensor1Plot"/>
-    </item>
-    <item>
-     <widget class="QLabel" name="sensor1Value">
-      <property name="text">
-       <string>surface sensor 1: uninitialized</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="PlotWidget" name="sensor2Plot"/>
-    </item>
-    <item>
-     <widget class="QLabel" name="sensor2Value">
-      <property name="text">
-       <string>surface sensor 2: uninitialized</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="PlotWidget" name="sensor3Plot"/>
-    </item>
-    <item>
-     <widget class="QLabel" name="sensor3Value">
-      <property name="text">
-       <string>surface sensor 3: uninitialized</string>
-      </property>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="0">
+        <widget class="QFrame" name="frame_2">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <widget class="QLabel" name="sensor0Value">
+            <property name="text">
+             <string>surface sensor 0: uninitialized</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="PlotWidget" name="sensor0Plot"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QFrame" name="frame_3">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_4">
+          <item>
+           <widget class="QLabel" name="sensor1Value">
+            <property name="text">
+             <string>surface sensor 1: uninitialized</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="PlotWidget" name="sensor1Plot"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QFrame" name="frame_4">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_5">
+          <item>
+           <widget class="QLabel" name="sensor2Value">
+            <property name="text">
+             <string>surface sensor 2: uninitialized</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="PlotWidget" name="sensor2Plot"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QFrame" name="frame_5">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_6">
+          <item>
+           <widget class="QLabel" name="sensor3Value">
+            <property name="text">
+             <string>surface sensor 3: uninitialized</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="PlotWidget" name="sensor3Plot"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+      <zorder>frame_2</zorder>
+      <zorder>frame_2</zorder>
+      <zorder>frame_3</zorder>
+      <zorder>frame_4</zorder>
+      <zorder>frame_5</zorder>
      </widget>
     </item>
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>550</width>
-     <height>30</height>
-    </rect>
-   </property>
-   <widget class="QMenu" name="menuFile">
-    <property name="title">
-     <string>Fi&amp;le</string>
-    </property>
-    <addaction name="actionExit"/>
-   </widget>
-   <addaction name="menuFile"/>
-  </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="actionSave">
-   <property name="text">
-    <string>&amp;Save</string>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
    </property>
-  </action>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionExit"/>
+   <addaction name="separator"/>
+   <addaction name="actionConnect"/>
+  </widget>
   <action name="actionExit">
    <property name="icon">
     <iconset theme="application-exit">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Exit</string>
+    <string>Exit</string>
+   </property>
+   <property name="toolTip">
+    <string>Exit the application</string>
    </property>
    <property name="statusTip">
-    <string>Quit the application.</string>
+    <string>Exit the application.</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="actionConnect">
+   <property name="icon">
+    <iconset theme="audio-card"/>
+   </property>
+   <property name="text">
+    <string>Connect</string>
+   </property>
+   <property name="toolTip">
+    <string>Connect to the Arduino</string>
+   </property>
+   <property name="statusTip">
+    <string>Connect to the Arduino.</string>
    </property>
   </action>
  </widget>
