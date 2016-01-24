@@ -10,8 +10,9 @@ from serial.serialutil import SerialException
 from verasleeve import actors
 
 # Device parameters
-FLUID_SENSOR_PORT = 'A5'
-SURFACE_SENSOR_PORT = 'A0'
+# These are analog pins, and must be specified without an 'A' prefix as in 'A0'.
+FLUID_SENSOR_PIN = 0
+SURFACE_SENSOR_PINS = [1, 2, 3, 4]
 
 class Leg(object):
     """Models the Arduino controller of the leg model test fixture."""
@@ -22,14 +23,12 @@ class Leg(object):
             self._board = nanpy.ArduinoApi(connection=connection)
         except SerialException:
             raise RuntimeError("Could not connect to the Arduino!") from None
-        self._board.pinMode(FLUID_SENSOR_PORT, self._board.INPUT)
-        self._board.pinMode(SURFACE_SENSOR_PORT, self._board.INPUT)
 
     def get_fluid_pressure_sensor(self):
-        return self._board.analogRead(FLUID_SENSOR_PORT)
+        return self._board.analogRead(FLUID_SENSOR_PIN)
 
-    def get_surface_pressure_sensor(self):
-        return self._board.analogRead(SURFACE_SENSOR_PORT)
+    def get_surface_pressure_sensor(self, sensor_id=0):
+        return self._board.analogRead(SURFACE_SENSOR_PINS[sensor_id])
 
 class LegMonitor(actors.Broadcaster, actors.Producer):
     """An actor to interface between a Leg instance and other actors.
@@ -59,10 +58,11 @@ class LegMonitor(actors.Broadcaster, actors.Producer):
                         'time': self.__time_since_produce_start(),
                         'fluid pressure': self.__leg.get_fluid_pressure_sensor()},
                        'fluid pressure')
-        self.broadcast({'data': 'surface pressure',
-                        'time': self.__time_since_produce_start(),
-                        'surface pressure': self.__leg.get_surface_pressure_sensor()},
-                       'surface pressure')
+        for surface_id in range(4):
+            self.broadcast({'data': 'surface pressure',
+                            'time': self.__time_since_produce_start(),
+                            'surface pressure': self.__leg.get_surface_pressure_sensor(surface_id)},
+                           'surface pressure {}'.format(surface_id))
 
     def __time_since_produce_start(self):
         return time.time() - self.__produce_start_time

@@ -42,16 +42,16 @@ class SensorMonitor(QtGui.QMainWindow):
                                                                           max_samples)
         filtered_label_updater = gui.LabelUpdater.start(self.__ui.signalValue)
         signal_filter = signal.Filterer.start(filter_width)
-        signal_filter.proxy().register(filtered_curve_updater, 'surface pressure')
-        signal_filter.proxy().register(filtered_label_updater, 'surface pressure')
+        signal_filter.proxy().register(filtered_curve_updater, 'surface pressure 0')
+        signal_filter.proxy().register(filtered_label_updater, 'surface pressure 0')
 
         try:
             leg_monitor = leg.LegMonitor().start()
         except RuntimeError:
             pykka.ActorRegistry.stop_all() # stop actors in LIFO order
             raise
-        leg_monitor.proxy().register(signal_curve_updater, 'surface pressure')
-        leg_monitor.proxy().register(signal_filter, 'surface pressure')
+        leg_monitor.proxy().register(signal_curve_updater, 'surface pressure 0')
+        leg_monitor.proxy().register(signal_filter, 'surface pressure 0')
         leg_monitor.tell({'command': 'start producing', 'interval': update_interval})
 
 if __name__ == "__main__":
