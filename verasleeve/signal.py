@@ -74,6 +74,8 @@ class Filterer(actors.Broadcaster, pykka.ThreadingActor):
             corresponding to the x axis value.
             The data entry should specify the value of the data sample, corresponding to the
             y axis value.
+        Command (received):
+            clear: clears the filterer.
         Data (broadcasted):
             Data messages have a time entry holding the time of the data sample.
             The type entry specifies the type of the data sample.
@@ -85,8 +87,25 @@ class Filterer(actors.Broadcaster, pykka.ThreadingActor):
         self.filterer = moving_filter(filter_width, filterer)
 
     def on_receive(self, message):
+        if 'command' in message:
+            self.__on_command(message)
+        else:
+            self.__on_data(message)
+
+
+    def __on_command(self, message):
+        """Processes command messages."""
+        if message['command'] == 'clear':
+            self.__clear_filterer()
+
+    def __on_data(self, message):
+        """Processes data messages."""
         filtered = self.filterer.send((message['time'], message['data']))
         if filtered is not None:
             self.broadcast({'time': filtered[0], 'type': message['type'],
                             'data': filtered[1]}, message['type'])
+
+    def __clear_filterer(self):
+        """Clears the curve."""
+        self.filterer.send(None)
 

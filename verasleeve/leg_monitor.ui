@@ -132,11 +132,6 @@
         </widget>
        </item>
       </layout>
-      <zorder>frame_2</zorder>
-      <zorder>frame_2</zorder>
-      <zorder>frame_3</zorder>
-      <zorder>frame_4</zorder>
-      <zorder>frame_5</zorder>
      </widget>
     </item>
    </layout>
@@ -155,6 +150,9 @@
    <addaction name="actionExit"/>
    <addaction name="separator"/>
    <addaction name="actionConnect"/>
+   <addaction name="separator"/>
+   <addaction name="actionStartMonitoring"/>
+   <addaction name="actionStopMonitoring"/>
   </widget>
   <action name="actionExit">
    <property name="icon">
@@ -167,16 +165,14 @@
    <property name="toolTip">
     <string>Exit the application</string>
    </property>
-   <property name="statusTip">
-    <string>Exit the application.</string>
-   </property>
    <property name="shortcut">
     <string>Ctrl+Q</string>
    </property>
   </action>
   <action name="actionConnect">
    <property name="icon">
-    <iconset theme="audio-card"/>
+    <iconset theme="audio-card">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Connect</string>
@@ -184,8 +180,29 @@
    <property name="toolTip">
     <string>Connect to the Arduino</string>
    </property>
-   <property name="statusTip">
-    <string>Connect to the Arduino.</string>
+  </action>
+  <action name="actionStopMonitoring">
+   <property name="icon">
+    <iconset theme="media-playback-stop">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>Stop Monitoring</string>
+   </property>
+   <property name="toolTip">
+    <string>Stop leg monitoring</string>
+   </property>
+  </action>
+  <action name="actionStartMonitoring">
+   <property name="icon">
+    <iconset theme="media-playback-start">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>Start Monitoring</string>
+   </property>
+   <property name="toolTip">
+    <string>Start leg monitoring</string>
    </property>
   </action>
  </widget>

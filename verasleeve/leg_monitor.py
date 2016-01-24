@@ -30,6 +30,10 @@ class LegMonitorPanel(QtGui.QMainWindow):
         # Actions
         self.__ui.actionExit.triggered.connect(QtGui.QApplication.instance().quit)
         self.__ui.actionConnect.triggered.connect(self.__init_monitoring)
+        self.__ui.actionStartMonitoring.setDisabled(True)
+        self.__ui.actionStartMonitoring.triggered.connect(self.__start_monitoring)
+        self.__ui.actionStopMonitoring.setDisabled(True)
+        self.__ui.actionStopMonitoring.triggered.connect(self.__stop_monitoring)
 
     def __init_graphs(self):
         self.__graphs = {
@@ -77,20 +81,47 @@ class LegMonitorPanel(QtGui.QMainWindow):
         for graph_name in self.__graphs.keys():
             filterer = signal.Filterer.start(filter_width)
             self.__filterers[graph_name] = filterer
-            filterer.proxy().register(self.__filtered_curve_updaters[graph_name], graph_name)
-            filterer.proxy().register(self.__filtered_label_updaters[graph_name], graph_name)
 
     def __init_monitoring(self):
         try:
-            monitor = leg.LegMonitor().start()
+            self.__monitor = leg.LegMonitor().start()
         except RuntimeError:
             pykka.ActorRegistry.stop_all() # stop actors in LIFO order
             raise
         for graph_name in self.__graphs.keys():
-            monitor.proxy().register(self.__raw_curve_updaters[graph_name], graph_name)
-            monitor.proxy().register(self.__filterers[graph_name], graph_name)
-        monitor.tell({'command': 'start producing', 'interval': self.update_interval})
+            self.__monitor.proxy().register(self.__filterers[graph_name], graph_name)
         self.__ui.actionConnect.setDisabled(True)
+        self.__ui.actionStartMonitoring.setDisabled(False)
+        self.__ui.actionStartMonitoring.trigger()
+
+    def __start_monitoring(self):
+        for graph_name in self.__graphs.keys():
+            raw_curve_updater = self.__raw_curve_updaters[graph_name]
+            raw_curve_updater.tell({'command': 'clear'})
+            self.__monitor.proxy().register(raw_curve_updater, graph_name)
+            filtered_curve_updater = self.__filtered_curve_updaters[graph_name]
+            filtered_curve_updater.tell({'command': 'clear'})
+            filtered_label_updater = self.__filtered_label_updaters[graph_name]
+            filterer = self.__filterers[graph_name]
+            filterer.tell({'command': 'clear'})
+            filterer.proxy().register(filtered_curve_updater, graph_name)
+            filterer.proxy().register(filtered_label_updater, graph_name)
+        self.__monitor.tell({'command': 'start producing', 'interval': self.update_interval})
+        self.__ui.actionStartMonitoring.setDisabled(True)
+        self.__ui.actionStopMonitoring.setDisabled(False)
+
+    def __stop_monitoring(self):
+        self.__monitor.tell({'command': 'stop producing'})
+        self.__ui.actionStartMonitoring.setDisabled(False)
+        self.__ui.actionStopMonitoring.setDisabled(True)
+        for graph_name in self.__graphs.keys():
+            raw_curve_updater = self.__raw_curve_updaters[graph_name]
+            self.__monitor.proxy().deregister(raw_curve_updater, graph_name)
+            filtered_curve_updater = self.__filtered_curve_updaters[graph_name]
+            filtered_label_updater = self.__filtered_label_updaters[graph_name]
+            filterer = self.__filterers[graph_name]
+            filterer.proxy().deregister(filtered_curve_updater, graph_name)
+            filterer.proxy().deregister(filtered_label_updater, graph_name)
 
 if __name__ == "__main__":
     pg.setConfigOptions(antialias=True, background='w', foreground='k')
