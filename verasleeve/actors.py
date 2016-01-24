@@ -2,6 +2,7 @@
 # Python imports
 import time
 import logging
+import collections
 
 # Dependency imports
 import pykka
@@ -19,7 +20,7 @@ class Broadcaster(object):
     """Selectively broadcasts messages to registered actors."""
     def __init__(self):
         super().__init__()
-        self.__registry = {}
+        self.__registry = collections.defaultdict(set)
         self.__logger = logging.getLogger(__name__)
 
     def register(self, target_actor, broadcast_class='all'):
@@ -50,7 +51,7 @@ class Broadcaster(object):
                              "broadcast class \"{}\"".format(broadcast_class))
 
     def broadcast(self, message, broadcast_class='all'):
-        """Broadcasts a message to all actors registered to for the specified broadcast class."""
+        """Broadcasts a message to all actors registered for the specified broadcast class."""
         self.__logger.debug("%s: broadcasting to %s: %s", self, broadcast_class, message)
         for actor in self.__registry[broadcast_class]:
             actor.tell(message)
