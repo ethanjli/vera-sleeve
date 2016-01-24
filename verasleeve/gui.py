@@ -17,5 +17,5 @@ class LabelUpdater(pykka.ThreadingActor):
 
     def on_receive(self, message):
         """Slot that updates the text label with the next sample."""
-        self.label.setText("{}: {}".format(message['data'], message[message['data']]))
+        self.label.setText("{}: {}".format(message['type'], message['data']))
 

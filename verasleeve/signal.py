@@ -72,11 +72,12 @@ class Filterer(actors.Broadcaster, pykka.ThreadingActor):
         Data (received):
             Data messages should have a time entry holding the time of the data sample,
             corresponding to the x axis value.
-            The data entry should specify the key of the entry holding the value of the data
-            sample, corresponding to the y axis value.
+            The data entry should specify the value of the data sample, corresponding to the
+            y axis value.
         Data (broadcasted):
             Data messages have a time entry holding the time of the data sample.
-            The data entry specifies the key of the entry holding the value of the data sample.
+            The type entry specifies the type of the data sample.
+            The data entry specifies the value of the data sample.
             The data sample will be a filtered value.
     """
     def __init__(self, filter_width=None, filterer=np.median):
@@ -84,9 +85,8 @@ class Filterer(actors.Broadcaster, pykka.ThreadingActor):
         self.filterer = moving_filter(filter_width, filterer)
 
     def on_receive(self, message):
-        data_type = message['data']
-        filtered = self.filterer.send((message['time'], message[data_type]))
+        filtered = self.filterer.send((message['time'], message['data']))
         if filtered is not None:
-            self.broadcast({'time': filtered[0], 'data': data_type,
-                            data_type: filtered[1]}, data_type)
+            self.broadcast({'time': filtered[0], 'type': message['type'],
+                            'data': filtered[1]}, message['type'])
 

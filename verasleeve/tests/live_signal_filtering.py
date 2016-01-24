@@ -24,7 +24,7 @@ class SignalGenerator(actors.Broadcaster, actors.Producer):
     def _on_produce(self):
         try:
             (time, sample) = next(self.signal_function)
-            self.broadcast({'time': time, 'data': 'signal', 'signal': sample}, 'signal')
+            self.broadcast({'time': time, 'type': 'signal', 'data': sample}, 'signal')
         except StopIteration:
             logging.info("Finished generating signal.")
             self.actor_ref.tell({'command': 'stop producing'})

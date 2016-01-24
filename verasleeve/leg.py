@@ -13,6 +13,7 @@ from verasleeve import actors
 # These are analog pins, and must be specified without an 'A' prefix as in 'A0'.
 FLUID_SENSOR_PIN = 0
 SURFACE_SENSOR_PINS = [1, 2, 3, 4]
+SURFACE_SENSOR_IDS = range(4)
 
 class Leg(object):
     """Models the Arduino controller of the leg model test fixture."""
@@ -40,9 +41,10 @@ class LegMonitor(actors.Broadcaster, actors.Producer):
             emitting messages at which the data sample was recorded. Each data message is
             broadcast on the broadcast class corresponding to the type of data message,
             e.g. 'fluid pressure'.
-            The data entry specifies the type of data message, which is the key of the entry
-            holding the value of the data sample.
+            The type entry specifies the type of data message, while the data entry holds
+            the value of the data sample.
             fluid pressure: the reading from the fluid pressure sensor.
+            surface pressure n: the reading from the surface pressure sensor with id n.
     """
     def __init__(self):
         super().__init__()
@@ -54,15 +56,15 @@ class LegMonitor(actors.Broadcaster, actors.Producer):
     def _on_stop_producing(self):
         self.__produce_start_time = None
     def _on_produce(self):
-        self.broadcast({'data': 'fluid pressure',
+        self.broadcast({'type': 'fluid pressure',
                         'time': self.__time_since_produce_start(),
-                        'fluid pressure': self.__leg.get_fluid_pressure_sensor()},
+                        'data': self.__leg.get_fluid_pressure_sensor()},
                        'fluid pressure')
-        for surface_id in range(4):
-            self.broadcast({'data': 'surface pressure',
+        for sensor_id in SURFACE_SENSOR_IDS:
+            self.broadcast({'type': 'surface pressure {}'.format(sensor_id),
                             'time': self.__time_since_produce_start(),
-                            'surface pressure': self.__leg.get_surface_pressure_sensor(surface_id)},
-                           'surface pressure {}'.format(surface_id))
+                            'data': self.__leg.get_surface_pressure_sensor(sensor_id)},
+                           'surface pressure {}'.format(sensor_id))
 
     def __time_since_produce_start(self):
         return time.time() - self.__produce_start_time

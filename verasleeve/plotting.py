@@ -12,8 +12,8 @@ class CurveUpdater(pykka.ThreadingActor):
         Data (received):
             Data messages should have a time entry holding the time of the data sample,
             corresponding to the x axis value.
-            The data entry should specify the key of the entry holding the value of the data
-            sample, corresponding to the y axis value.
+            The data entry should specify the value of the data sample, corresponding to the
+            y axis value.
     """
     def __init__(self, curve, max_samples=None):
         super().__init__()
@@ -24,7 +24,7 @@ class CurveUpdater(pykka.ThreadingActor):
     def on_receive(self, message):
         """Slot that updates the curves with the next sample."""
         sample_time = message['time']
-        sample = message[message['data']]
+        sample = message['data']
         self.curve_x.append(sample_time)
         self.curve_y.append(sample)
         self.curve.setData(self.curve_x, self.curve_y)
