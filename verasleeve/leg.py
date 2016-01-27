@@ -12,8 +12,8 @@ from verasleeve import actors
 # Device parameters
 # These are analog pins, and must be specified without an 'A' prefix as in 'A0'.
 FLUID_SENSOR_PIN = 0
-SURFACE_SENSOR_PINS = [1, 2, 3, 4]
-SURFACE_SENSOR_IDS = range(4)
+SURFACE_SENSOR_PINS = [1]
+SURFACE_SENSOR_IDS = range(len(SURFACE_SENSOR_PINS))
 
 class Leg(object):
     """Models the Arduino controller of the leg model test fixture."""

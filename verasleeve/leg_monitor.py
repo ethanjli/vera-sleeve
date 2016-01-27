@@ -38,10 +38,7 @@ class LegMonitorPanel(QtGui.QMainWindow):
     def __init_graphs(self):
         self.__graphs = {
             'fluid pressure': self.__ui.fluidPlot.getPlotItem(),
-            'surface pressure 0': self.__ui.sensor0Plot.getPlotItem(),
-            'surface pressure 1': self.__ui.sensor1Plot.getPlotItem(),
-            'surface pressure 2': self.__ui.sensor2Plot.getPlotItem(),
-            'surface pressure 3': self.__ui.sensor3Plot.getPlotItem()
+            'surface pressure 0': self.__ui.surface0Plot.getPlotItem()
         }
         for (_, graph) in self.__graphs.items():
             graph.disableAutoRange(axis=pg.ViewBox.YAxis)
@@ -52,14 +49,12 @@ class LegMonitorPanel(QtGui.QMainWindow):
         for sensor_id in leg.SURFACE_SENSOR_IDS:
             graph = self.__graphs['surface pressure {}'.format(sensor_id)]
             graph.getViewBox().setYRange(0, 1024)
+            graph.setTitle("Surface Pressure {} Sensor Reading".format(sensor_id))
 
     def __init_labels(self):
         self.__labels = {
             'fluid pressure': self.__ui.fluidValue,
-            'surface pressure 0': self.__ui.sensor0Value,
-            'surface pressure 1': self.__ui.sensor1Value,
-            'surface pressure 2': self.__ui.sensor2Value,
-            'surface pressure 3': self.__ui.sensor3Value
+            'surface pressure 0': self.__ui.surface0Value
         }
 
     def __init_updaters(self, max_samples):
@@ -126,7 +121,7 @@ class LegMonitorPanel(QtGui.QMainWindow):
 if __name__ == "__main__":
     pg.setConfigOptions(antialias=True, background='w', foreground='k')
     app = QtGui.QApplication(sys.argv)
-    leg_monitor_panel = LegMonitorPanel(0.05, 40, 100)
+    leg_monitor_panel = LegMonitorPanel(0.05, 40, 1000)
     app.exec_()
     pykka.ActorRegistry.stop_all() # stop actors in LIFO order
     sys.exit()
