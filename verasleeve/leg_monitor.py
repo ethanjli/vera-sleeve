@@ -21,10 +21,19 @@ class LegMonitorPanel(QtGui.QMainWindow):
         self.__ui = uic.loadUi(_UI_LAYOUT_PATH)
         self.__ui.show()
         self.__init_window()
+
+        self._sensors = {'fluid pressure', 'surface pressure 0'}
+
         self.__init_graphs()
+        self.__init_curve_updaters(max_samples)
+
         self.__init_labels()
-        self.__init_updaters(max_samples)
+        self.__init_label_updaters()
+
         self.__init_filters(filter_width)
+
+        self.__monitor = None
+        self.__unit_converter = None
 
     def __init_window(self):
         # Actions
@@ -44,63 +53,118 @@ class LegMonitorPanel(QtGui.QMainWindow):
             graph.disableAutoRange(axis=pg.ViewBox.YAxis)
             graph.setLabels(bottom="Time (s)", left="Pin Value (0-1024)")
             graph.addLegend()
-        self.__graphs['fluid pressure'].getViewBox().setYRange(50, 400)
-        self.__graphs['fluid pressure'].setTitle("Fluid Pressure Sensor Reading")
+        self.__graphs['fluid pressure'].getViewBox().setYRange(-100, 400)
+        self.__graphs['fluid pressure'].setTitle("Fluid Pressure, Top of Vein")
+        self.__graphs['fluid pressure'].setLabels(left="Pressure (mmHg)")
         for sensor_id in leg.SURFACE_SENSOR_IDS:
             graph = self.__graphs['surface pressure {}'.format(sensor_id)]
             graph.getViewBox().setYRange(0, 1024)
             graph.setTitle("Surface Pressure {} Sensor Reading".format(sensor_id))
 
     def __init_labels(self):
-        self.__labels = {
+        self.__denoised_labels = {
             'fluid pressure': self.__ui.fluidValue,
             'surface pressure 0': self.__ui.surface0Value
         }
+        self.__max_labels = {
+            'fluid pressure': self.__ui.fluidMax,
+            'surface pressure 0': self.__ui.surface0Max
+        }
+        self.__min_labels = {
+            'fluid pressure': self.__ui.fluidMin,
+            'surface pressure 0': self.__ui.surface0Min
+        }
 
-    def __init_updaters(self, max_samples):
-        self.__raw_curve_updaters = {}
-        self.__filtered_curve_updaters = {}
-        self.__filtered_label_updaters = {}
-        for (graph_name, graph) in self.__graphs.items():
-            raw_curve = graph.plot(pen='r', name="raw")
-            raw_curve_updater = plotting.CurveUpdater.start(raw_curve, max_samples)
-            self.__raw_curve_updaters[graph_name] = raw_curve_updater
-            filtered_curve = graph.plot(pen='b', name="filtered")
-            filtered_curve_updater = plotting.CurveUpdater.start(filtered_curve, max_samples)
-            self.__filtered_curve_updaters[graph_name] = filtered_curve_updater
-            filtered_label_updater = gui.LabelUpdater.start(self.__labels[graph_name])
-            self.__filtered_label_updaters[graph_name] = filtered_label_updater
+    def __init_curve_updaters(self, max_samples):
+        curve_types = {
+            'raw': {
+                'pen': 'r',
+                'name': 'Raw'
+            },
+            'denoised': {
+                'pen': 'k',
+                'name': 'Denoised'
+            },
+            'max': {
+                'pen': 'g',
+                'name': 'Denoised Max'
+            },
+            'min': {
+                'pen': 'b',
+                'name': 'Denoised Min'
+            }
+        }
+        self.__curve_updaters = {
+            'raw': {},
+            'denoised': {},
+            'max': {},
+            'min': {}
+        }
+        for name in self._sensors:
+            for (curve_type, curve_props) in curve_types.items():
+                curve = self.__graphs[name].plot(pen=curve_props['pen'], name=curve_props['name'])
+                curve_updater = plotting.CurveUpdater.start(curve, max_samples)
+                self.__curve_updaters[curve_type][name] = curve_updater
+
+    def __init_label_updaters(self):
+        self.__label_updaters = {
+            'denoised': {},
+            'max': {},
+            'min': {}
+        }
+        for name in self._sensors:
+            denoised_label_updater = gui.LabelUpdater.start(self.__denoised_labels[name],
+                                                            "Value")
+            self.__label_updaters['denoised'][name] = denoised_label_updater
+            max_label_updater = gui.LabelUpdater.start(self.__max_labels[name], "Max")
+            self.__label_updaters['max'][name] = max_label_updater
+            min_label_updater = gui.LabelUpdater.start(self.__min_labels[name], "Min")
+            self.__label_updaters['min'][name] = min_label_updater
 
     def __init_filters(self, filter_width):
-        self.__filterers = {}
-        for graph_name in self.__graphs.keys():
+        self.__filterers = {
+            'denoised': {},
+            'max': {},
+            'min': {}
+        }
+        self.__maximizers = {}
+        self.__minimizers = {}
+        for name in self._sensors:
             filterer = signal.Filterer.start(filter_width)
-            self.__filterers[graph_name] = filterer
+            self.__filterers['denoised'][name] = filterer
+            maximizer = signal.Filterer.start(2 * filter_width, max, "right")
+            self.__filterers['max'][name] = maximizer
+            filterer.proxy().register(maximizer, name)
+            minimizer = signal.Filterer.start(2 * filter_width, min, "right")
+            self.__filterers['min'][name] = minimizer
+            filterer.proxy().register(minimizer, name)
 
     def __init_monitoring(self):
+        self.__unit_converter = leg.LegUnitConverter().start()
         try:
             self.__monitor = leg.LegMonitor().start()
         except RuntimeError:
             pykka.ActorRegistry.stop_all() # stop actors in LIFO order
             raise
-        for graph_name in self.__graphs.keys():
-            self.__monitor.proxy().register(self.__filterers[graph_name], graph_name)
+        for name in self._sensors:
+            self.__monitor.proxy().register(self.__unit_converter, name)
+            self.__unit_converter.proxy().register(self.__filterers['denoised'][name], name)
         self.__ui.actionConnect.setDisabled(True)
         self.__ui.actionStartMonitoring.setDisabled(False)
         self.__ui.actionStartMonitoring.trigger()
 
     def __start_monitoring(self):
-        for graph_name in self.__graphs.keys():
-            raw_curve_updater = self.__raw_curve_updaters[graph_name]
+        for name in self._sensors:
+            raw_curve_updater = self.__curve_updaters['raw'][name]
             raw_curve_updater.tell({'command': 'clear'})
-            self.__monitor.proxy().register(raw_curve_updater, graph_name)
-            filtered_curve_updater = self.__filtered_curve_updaters[graph_name]
-            filtered_curve_updater.tell({'command': 'clear'})
-            filtered_label_updater = self.__filtered_label_updaters[graph_name]
-            filterer = self.__filterers[graph_name]
-            filterer.tell({'command': 'clear'})
-            filterer.proxy().register(filtered_curve_updater, graph_name)
-            filterer.proxy().register(filtered_label_updater, graph_name)
+            self.__unit_converter.proxy().register(raw_curve_updater, name)
+            for filter_type in self.__filterers.keys():
+                filterer = self.__filterers[filter_type][name]
+                filterer.tell({'command': 'clear'})
+                curve_updater = self.__curve_updaters[filter_type][name]
+                curve_updater.tell({'command': 'clear'})
+                filterer.proxy().register(curve_updater, name)
+                filterer.proxy().register(self.__label_updaters[filter_type][name], name)
         self.__monitor.tell({'command': 'start producing', 'interval': self.update_interval})
         self.__ui.actionStartMonitoring.setDisabled(True)
         self.__ui.actionStopMonitoring.setDisabled(False)
@@ -109,14 +173,13 @@ class LegMonitorPanel(QtGui.QMainWindow):
         self.__monitor.tell({'command': 'stop producing'})
         self.__ui.actionStartMonitoring.setDisabled(False)
         self.__ui.actionStopMonitoring.setDisabled(True)
-        for graph_name in self.__graphs.keys():
-            raw_curve_updater = self.__raw_curve_updaters[graph_name]
-            self.__monitor.proxy().deregister(raw_curve_updater, graph_name)
-            filtered_curve_updater = self.__filtered_curve_updaters[graph_name]
-            filtered_label_updater = self.__filtered_label_updaters[graph_name]
-            filterer = self.__filterers[graph_name]
-            filterer.proxy().deregister(filtered_curve_updater, graph_name)
-            filterer.proxy().deregister(filtered_label_updater, graph_name)
+        for name in self._sensors:
+            raw_curve_updater = self.__curve_updaters['raw'][name]
+            self.__unit_converter.proxy().deregister(raw_curve_updater, name)
+            for filter_type in self.__filterers.keys():
+                filterer = self.__filterers[filter_type][name]
+                filterer.proxy().deregister(self.__curve_updaters[filter_type][name], name)
+                filterer.proxy().deregister(self.__label_updaters[filter_type][name], name)
 
 if __name__ == "__main__":
     pg.setConfigOptions(antialias=True, background='w', foreground='k')

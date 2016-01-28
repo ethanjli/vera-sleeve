@@ -6,29 +6,52 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>550</width>
+    <width>568</width>
     <height>642</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Sensor Monitor</string>
+   <string>Leg Model Monitor</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QFrame" name="frameFluid">
-      <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
+     <widget class="QGroupBox" name="groupBoxFluid">
+      <property name="title">
+       <string>Fluid Sensor</string>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="QLabel" name="fluidValue">
-         <property name="text">
-          <string>fluid sensor: uninitialized</string>
+        <widget class="QFrame" name="frameFluidNumbers">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
          </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QLabel" name="fluidValue">
+            <property name="text">
+             <string>Filtered: ???</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="fluidMin">
+            <property name="text">
+             <string>Min: ???</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="fluidMax">
+            <property name="text">
+             <string>Max: ???</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
        <item>
@@ -38,19 +61,42 @@
      </widget>
     </item>
     <item>
-     <widget class="QFrame" name="frameSurface0">
-      <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
+     <widget class="QGroupBox" name="groupBoxSurface0">
+      <property name="title">
+       <string>Surface Sensor 0</string>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
-        <widget class="QLabel" name="surface0Value">
-         <property name="text">
-          <string>surface sensor 0: uninitialized</string>
+        <widget class="QFrame" name="frameSurface0Numbers">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
          </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QLabel" name="surface0Value">
+            <property name="text">
+             <string>Filtered: ???</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="surface0Min">
+            <property name="text">
+             <string>Min: ???</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="surface0Max">
+            <property name="text">
+             <string>Max: ???</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
        <item>
