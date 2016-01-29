@@ -15,7 +15,7 @@ from verasleeve import leg, signal, plotting, gui
 _UI_LAYOUT_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'leg_monitor.ui')
 
 class LegMonitorPanel(QtGui.QMainWindow):
-    def __init__(self, update_interval, filter_width, max_samples):
+    def __init__(self, update_interval, filter_width, graph_width):
         super().__init__()
         self.update_interval = update_interval
         self.__ui = uic.loadUi(_UI_LAYOUT_PATH)
@@ -25,12 +25,12 @@ class LegMonitorPanel(QtGui.QMainWindow):
         self._sensors = {'fluid pressure', 'surface pressure 0'}
 
         self.__init_graphs()
-        self.__init_curve_updaters(max_samples)
+        self.__init_curve_updaters(graph_width)
 
         self.__init_labels()
         self.__init_label_updaters()
 
-        self.__init_filters(filter_width)
+        self.__init_filters(filter_width, graph_width)
 
         self.__monitor = None
         self.__unit_converter = None
@@ -75,7 +75,7 @@ class LegMonitorPanel(QtGui.QMainWindow):
             'surface pressure 0': self.__ui.surface0Min
         }
 
-    def __init_curve_updaters(self, max_samples):
+    def __init_curve_updaters(self, graph_width):
         curve_types = {
             'raw': {
                 'pen': 'r',
@@ -103,7 +103,7 @@ class LegMonitorPanel(QtGui.QMainWindow):
         for name in self._sensors:
             for (curve_type, curve_props) in curve_types.items():
                 curve = self.__graphs[name].plot(pen=curve_props['pen'], name=curve_props['name'])
-                curve_updater = plotting.CurveUpdater.start(curve, max_samples)
+                curve_updater = plotting.CurveUpdater.start(curve, graph_width)
                 self.__curve_updaters[curve_type][name] = curve_updater
 
     def __init_label_updaters(self):
@@ -121,7 +121,7 @@ class LegMonitorPanel(QtGui.QMainWindow):
             min_label_updater = gui.LabelUpdater.start(self.__min_labels[name], "Min")
             self.__label_updaters['min'][name] = min_label_updater
 
-    def __init_filters(self, filter_width):
+    def __init_filters(self, filter_width, graph_width):
         self.__filterers = {
             'denoised': {},
             'max': {},
@@ -132,10 +132,10 @@ class LegMonitorPanel(QtGui.QMainWindow):
         for name in self._sensors:
             filterer = signal.Filterer.start(filter_width)
             self.__filterers['denoised'][name] = filterer
-            maximizer = signal.Filterer.start(2 * filter_width, max, "right")
+            maximizer = signal.Filterer.start(graph_width // 4, max, "right")
             self.__filterers['max'][name] = maximizer
             filterer.proxy().register(maximizer, name)
-            minimizer = signal.Filterer.start(2 * filter_width, min, "right")
+            minimizer = signal.Filterer.start(graph_width // 4, min, "right")
             self.__filterers['min'][name] = minimizer
             filterer.proxy().register(minimizer, name)
 
@@ -184,7 +184,7 @@ class LegMonitorPanel(QtGui.QMainWindow):
 if __name__ == "__main__":
     pg.setConfigOptions(antialias=True, background='w', foreground='k')
     app = QtGui.QApplication(sys.argv)
-    leg_monitor_panel = LegMonitorPanel(0.05, 40, 1000)
+    leg_monitor_panel = LegMonitorPanel(0.05, 40, 800)
     app.exec_()
     pykka.ActorRegistry.stop_all() # stop actors in LIFO order
     sys.exit()
