@@ -22,7 +22,7 @@ class LegMonitorPanel(QtGui.QMainWindow):
         self.__ui.show()
         self.__init_window()
 
-        self._sensors = {'fluid pressure', 'surface pressure 0'}
+        self._sensors = {'fluid pressure'}
 
         self.__init_graphs()
         self.__init_curve_updaters(graph_width)
@@ -47,32 +47,24 @@ class LegMonitorPanel(QtGui.QMainWindow):
     def __init_graphs(self):
         self.__graphs = {
             'fluid pressure': self.__ui.fluidPlot.getPlotItem(),
-            'surface pressure 0': self.__ui.surface0Plot.getPlotItem()
         }
         for (_, graph) in self.__graphs.items():
             graph.disableAutoRange(axis=pg.ViewBox.YAxis)
             graph.setLabels(bottom="Time (s)", left="Pin Value (0-1024)")
             graph.addLegend()
-        self.__graphs['fluid pressure'].getViewBox().setYRange(-100, 400)
+        self.__graphs['fluid pressure'].getViewBox().setYRange(-100, 500)
         self.__graphs['fluid pressure'].setTitle("Fluid Pressure, Top of Vein")
         self.__graphs['fluid pressure'].setLabels(left="Pressure (mmHg)")
-        for sensor_id in leg.SURFACE_SENSOR_IDS:
-            graph = self.__graphs['surface pressure {}'.format(sensor_id)]
-            graph.getViewBox().setYRange(0, 1024)
-            graph.setTitle("Surface Pressure {} Sensor Reading".format(sensor_id))
 
     def __init_labels(self):
         self.__denoised_labels = {
-            'fluid pressure': self.__ui.fluidValue,
-            'surface pressure 0': self.__ui.surface0Value
+            'fluid pressure': self.__ui.fluidValue
         }
         self.__max_labels = {
-            'fluid pressure': self.__ui.fluidMax,
-            'surface pressure 0': self.__ui.surface0Max
+            'fluid pressure': self.__ui.fluidMax
         }
         self.__min_labels = {
-            'fluid pressure': self.__ui.fluidMin,
-            'surface pressure 0': self.__ui.surface0Min
+            'fluid pressure': self.__ui.fluidMin
         }
 
     def __init_curve_updaters(self, graph_width):

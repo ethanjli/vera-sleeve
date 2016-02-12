@@ -60,51 +60,6 @@
       </layout>
      </widget>
     </item>
-    <item>
-     <widget class="QGroupBox" name="groupBoxSurface0">
-      <property name="title">
-       <string>Surface Sensor 0</string>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout_3">
-       <item>
-        <widget class="QFrame" name="frameSurface0Numbers">
-         <property name="frameShape">
-          <enum>QFrame::StyledPanel</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Raised</enum>
-         </property>
-         <layout class="QHBoxLayout" name="horizontalLayout_3">
-          <item>
-           <widget class="QLabel" name="surface0Value">
-            <property name="text">
-             <string>Filtered: ???</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="surface0Min">
-            <property name="text">
-             <string>Min: ???</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="surface0Max">
-            <property name="text">
-             <string>Max: ???</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="PlotWidget" name="surface0Plot"/>
-       </item>
-      </layout>
-     </widget>
-    </item>
    </layout>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
