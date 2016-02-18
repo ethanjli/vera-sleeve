@@ -80,7 +80,8 @@ class Filterer(actors.Broadcaster, pykka.ThreadingActor):
             clear: clears the filterer.
         Data (broadcasted):
             Data messages have a time entry holding the time of the data sample.
-            The type entry specifies the type of the data sample.
+            The type entry specifies the type of the data sample, and the data is broadcasted on
+            the channel named by that type.
             The data entry specifies the value of the data sample.
             The data sample will be a filtered value.
     """
@@ -94,7 +95,6 @@ class Filterer(actors.Broadcaster, pykka.ThreadingActor):
         else:
             self.__on_data(message)
 
-
     def __on_command(self, message):
         """Processes command messages."""
         if message['command'] == 'clear':
@@ -104,10 +104,13 @@ class Filterer(actors.Broadcaster, pykka.ThreadingActor):
         """Processes data messages."""
         filtered = self.filterer.send((message['time'], message['data']))
         if filtered is not None:
-            self.broadcast({'time': filtered[0], 'type': message['type'],
-                            'data': filtered[1]}, message['type'])
+            new_message = dict(message)
+            new_message['time'] = filtered[0]
+            new_message['data'] = filtered[1]
+            self.broadcast(new_message, message['type'])
 
     def __clear_filterer(self):
         """Clears the curve."""
         self.filterer.send(None)
+
 
