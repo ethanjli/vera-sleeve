@@ -22,13 +22,14 @@ LOW_HIGH_FLUID_PRESSURE_TRANSITION_RAW = 900 # raw value where the low fluid sen
 
 class Leg(object):
     """Models the Arduino controller of the leg model test fixture."""
-    def __init__(self):
+    def __init__(self, connection=None):
         super().__init__()
-        try:
-            connection = nanpy.SerialManager()
-            self._board = nanpy.ArduinoApi(connection=connection)
-        except SerialException:
-            raise RuntimeError("Could not connect to the Arduino!") from None
+        if connection is None:
+            try:
+                connection = nanpy.SerialManager()
+            except SerialException:
+                raise RuntimeError("Could not connect to the Arduino!") from None
+        self._board = nanpy.ArduinoApi(connection=connection)
 
     def get_low_fluid_pressure_sensor(self):
         """Read from the sensitive (low-range) fluid pressure sensor."""
@@ -36,7 +37,6 @@ class Leg(object):
     def get_high_fluid_pressure_sensor(self):
         """Read from the high-range fluid pressure sensor."""
         return self._board.analogRead(HIGH_FLUID_SENSOR_PIN)
-
 
 class LegMonitor(actors.Broadcaster, actors.Producer):
     """An actor to interface between a Leg instance and other actors.
@@ -53,8 +53,11 @@ class LegMonitor(actors.Broadcaster, actors.Producer):
             fluid pressure: 2-tuple of the raw readings from the low and high fluid pressure
             sensors, respectively.
     """
+    def __init__(self, leg=None):
         super().__init__()
-        self.__leg = Leg()
+        if leg is None:
+            leg = Leg()
+        self.__leg = leg
         self.__produce_start_time = None
 
     def _on_start_producing(self):
