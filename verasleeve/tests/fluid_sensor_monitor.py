@@ -30,7 +30,7 @@ class SensorMonitor(QtGui.QMainWindow):
     def __init_monitor(self, update_interval, filter_width, max_samples):
         graph = self.__ui.signalPlot.getPlotItem()
         graph.getViewBox().disableAutoRange(axis=pg.ViewBox.YAxis)
-        graph.getViewBox().setYRange(50, 400)
+        graph.getViewBox().setYRange(50, 1000)
         graph.addLegend()
         graph.setTitle("Fluid Pressure Sensor Reading")
         graph.setLabels(bottom="Time (s)", left="Pin Value (0-1024)")
@@ -38,20 +38,22 @@ class SensorMonitor(QtGui.QMainWindow):
         filtered_curve = graph.plot(pen='b', name="Median Filtered Signal")
 
         signal_curve_updater = plotting.CurveUpdater.start(signal_curve, max_samples)
-        filtered_curve_updater = plotting.CurveUpdater.start(filtered_curve,
-                                                                          max_samples)
+        filtered_curve_updater = plotting.CurveUpdater.start(filtered_curve, max_samples)
         filtered_label_updater = gui.LabelUpdater.start(self.__ui.signalValue)
         signal_filter = signal.Filterer.start(filter_width)
         signal_filter.proxy().register(filtered_curve_updater, 'fluid pressure')
         signal_filter.proxy().register(filtered_label_updater, 'fluid pressure')
+
+        pressure_selector = signal.TupleSelector.start(0)
+        pressure_selector.proxy().register(signal_curve_updater, 'fluid pressure')
+        pressure_selector.proxy().register(signal_filter, 'fluid pressure')
 
         try:
             leg_monitor = leg.LegMonitor().start()
         except RuntimeError:
             pykka.ActorRegistry.stop_all() # stop actors in LIFO order
             raise
-        leg_monitor.proxy().register(signal_curve_updater, 'fluid pressure')
-        leg_monitor.proxy().register(signal_filter, 'fluid pressure')
+        leg_monitor.proxy().register(pressure_selector, 'fluid pressure')
         leg_monitor.tell({'command': 'start producing', 'interval': update_interval})
 
 if __name__ == "__main__":

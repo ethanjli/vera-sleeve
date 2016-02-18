@@ -14,7 +14,7 @@ from .. import leg, signal, plotting
 logging.basicConfig(level=logging.INFO)
 
 def stream(update_interval, filter_width, max_samples):
-    """Continuously generates noisy data and filters it and plots it live."""
+    """Continuously acquires low fluid pressure sensor signal, filters it, and plots it live."""
     # Plotting
     graph = pg.plot()
     graph.addLegend()
@@ -27,13 +27,16 @@ def stream(update_interval, filter_width, max_samples):
     signal_filter = signal.Filterer.start(filter_width=filter_width)
     signal_filter.proxy().register(filtered_curve_updater, 'fluid pressure')
 
+    pressure_selector = signal.TupleSelector.start(0)
+    pressure_selector.proxy().register(signal_curve_updater, 'fluid pressure')
+    pressure_selector.proxy().register(signal_filter, 'fluid pressure')
+
     try:
         leg_monitor = leg.LegMonitor().start()
     except RuntimeError:
         pykka.ActorRegistry.stop_all() # stop actors in LIFO order
         raise
-    leg_monitor.proxy().register(signal_curve_updater, 'fluid pressure')
-    leg_monitor.proxy().register(signal_filter, 'fluid pressure')
+    leg_monitor.proxy().register(pressure_selector, 'fluid pressure')
     leg_monitor.tell({'command': 'start producing', 'interval': update_interval})
 
 if __name__ == "__main__":

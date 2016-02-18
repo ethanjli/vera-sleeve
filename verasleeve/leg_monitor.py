@@ -14,6 +14,9 @@ from verasleeve import leg, signal, plotting, gui
 
 _UI_LAYOUT_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'leg_monitor.ui')
 
+FLUID_PRESSURE_MIN = -20
+FLUID_PRESSURE_MAX = 100
+
 class LegMonitorPanel(QtGui.QMainWindow):
     def __init__(self, update_interval, filter_width, graph_width):
         super().__init__()
@@ -52,7 +55,8 @@ class LegMonitorPanel(QtGui.QMainWindow):
             graph.disableAutoRange(axis=pg.ViewBox.YAxis)
             graph.setLabels(bottom="Time (s)", left="Pin Value (0-1024)")
             graph.addLegend()
-        self.__graphs['fluid pressure'].getViewBox().setYRange(-100, 500)
+        self.__graphs['fluid pressure'].getViewBox().setYRange(FLUID_PRESSURE_MIN,
+                                                               FLUID_PRESSURE_MAX)
         self.__graphs['fluid pressure'].setTitle("Fluid Pressure, Top of Vein")
         self.__graphs['fluid pressure'].setLabels(left="Pressure (mmHg)")
 

@@ -113,4 +113,26 @@ class Filterer(actors.Broadcaster, pykka.ThreadingActor):
         """Clears the curve."""
         self.filterer.send(None)
 
+class TupleSelector(actors.Broadcaster, pykka.ThreadingActor):
+    """Filters a signal data from tuple-form to a single value, discarding other values.
+
+    Public Messages:
+        Data (received):
+            The type entry specifies the type of data message
+            The data entry should specify a tuple of values of the data sample, corresponding to
+            the y axis values.
+        Data (broadcasted):
+            The type entry specifies the type of the data sample, and the data is broadcasted on
+            the channel named by that type.
+            The data sample will be a single value of the tuple, chosen by position from the
+            actor's constructor argument.
+    """
+    def __init__(self, tuple_position=0):
+        super().__init__()
+        self.tuple_position = tuple_position
+
+    def on_receive(self, message):
+        new_message = dict(message)
+        new_message['data'] = message['data'][self.tuple_position]
+        self.broadcast(new_message, message['type'])
 
