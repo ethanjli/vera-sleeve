@@ -17,7 +17,7 @@ def control_band():
     logger = logging.getLogger(__name__)
 
     try:
-        sleeve_controller = sleeve.AdditiveSleeveController.start()
+        sleeve_controller = sleeve.IndependentSleeveController.start()
     except RuntimeError:
         pykka.ActorRegistry.stop_all() # stop actors in LIFO order
         raise

@@ -89,3 +89,21 @@ class AdditiveSleeveController(SleeveController):
         adjusted_time = self.__time_since_cycle_start() - self.delay_per_band * servo_id
         whether_contract = (adjusted_time < self.period and adjusted_time > self.duty * self.period)
         return self.min_pos + (self.max_pos - self.min_pos) * int(whether_contract)
+
+class IndependentSleeveController(SleeveController):
+    """Contracts sleeve bands in an independent sequential square-wave manner."""
+    def __init__(self, sleeve=None, period=2.5 * (2 + NUM_BANDS), duty=1 / NUM_BANDS,
+                 delay_per_band=2, min_pos=130, max_pos=50):
+        super().__init__(sleeve)
+        self.period = period
+        self.duty = duty
+        self.delay_per_band = delay_per_band
+        self.min_pos = min_pos
+        self.max_pos = max_pos
+
+    def __time_since_cycle_start(self):
+        return self._time_since_produce_start() % self.period
+    def _get_position(self, servo_id):
+        adjusted_time = self.__time_since_cycle_start() - self.delay_per_band * servo_id
+        whether_contract = (adjusted_time > 0 and adjusted_time < self.duty * self.period)
+        return self.min_pos + (self.max_pos - self.min_pos) * int(whether_contract)
