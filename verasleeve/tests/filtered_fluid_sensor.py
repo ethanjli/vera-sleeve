@@ -32,7 +32,7 @@ def stream(update_interval, filter_width, max_samples):
     pressure_selector.proxy().register(signal_filter, 'fluid pressure')
 
     try:
-        leg_monitor = leg.LegMonitor().start()
+        leg_monitor = leg.LegMonitor.start()
     except RuntimeError:
         pykka.ActorRegistry.stop_all() # stop actors in LIFO order
         raise

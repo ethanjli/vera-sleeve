@@ -136,9 +136,9 @@ class LegMonitorPanel(QtGui.QMainWindow):
             filterer.proxy().register(minimizer, name)
 
     def __init_monitoring(self):
-        self.__unit_converter = leg.LegUnitConverter().start()
+        self.__unit_converter = leg.LegUnitConverter.start()
         try:
-            self.__monitor = leg.LegMonitor().start()
+            self.__monitor = leg.LegMonitor.start()
         except RuntimeError:
             pykka.ActorRegistry.stop_all() # stop actors in LIFO order
             raise

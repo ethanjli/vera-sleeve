@@ -16,7 +16,7 @@ def stream():
     """Continuously prints the pin value on the fluid pressure sensor."""
     printer = actors.Printer.start('Printer')
     try:
-        leg_monitor = leg.LegMonitor().start()
+        leg_monitor = leg.LegMonitor.start()
     except RuntimeError:
         pykka.ActorRegistry.stop_all() # stop actors in LIFO order
         raise
