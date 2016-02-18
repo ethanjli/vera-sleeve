@@ -22,7 +22,7 @@
 #define USE_Register                                0
 
 // watchdog and reset
-#define USE_Watchdog                                0
+#define USE_Watchdog                                1
 
 #define USE_Tone                                    0
 
