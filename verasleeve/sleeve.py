@@ -46,64 +46,70 @@ class SleeveServos(object):
 
 class SleeveController(actors.Producer):
     """An abstract actor to control the contractions of a leg sleeve."""
-    def __init__(self, sleeve_servos=None):
+    def __init__(self, uncontracted_pos, contracted_pos, sleeve_servos=None):
         super().__init__()
         if sleeve_servos is None:
             sleeve_servos = SleeveServos()
         self.__sleeve_servos = sleeve_servos
         self.__produce_start_time = None
+        self.uncontracted_pos = uncontracted_pos
+        self.contracted_pos = contracted_pos
 
     def _on_start_producing(self):
         self.__produce_start_time = time.time()
     def _on_stop_producing(self):
-        print("stop producing")
         self.__produce_start_time = None
     def _on_produce(self):
         for servo_id in BAND_SERVO_IDS:
-            self.__sleeve_servos.set_servo_position(servo_id, self._get_position(servo_id))
+            self.__sleeve_servos.set_servo_position(servo_id, self.__get_position(servo_id))
+    def __get_position(self, servo_id):
+        return self.uncontracted_pos + int((self.contracted_pos - self.uncontracted_pos)
+                                           * self._get_fractional_position(servo_id))
 
     def on_stop(self):
         self.__sleeve_servos.quit()
 
     def _time_since_produce_start(self):
         return time.time() - self.__produce_start_time
-    def _get_position(self, servo_id):
+    def _get_fractional_position(self, servo_id):
         """Abstract method returning a servo position for the specified servo.
+        Should return as a value between 0 and 1, inclusive; when 0, servo is fully uncontracted,
+        and when 1, servo is fully contracted.
         Implement this method to define sleeve contraction behavior."""
-        return 0
+        pass
 
-class AdditiveSleeveController(SleeveController):
+class PeriodicSleeveController(SleeveController):
+    """Abstract actor to support sleeve controllers that behave periodically."""
+    def __init__(self, uncontracted_pos, contracted_pos, period, sleeve_servos):
+        super().__init__(uncontracted_pos, contracted_pos, sleeve_servos)
+        self.period = period
+
+    def _time_since_cycle_start(self):
+        return self._time_since_produce_start() % self.period
+
+class AdditiveSleeveController(PeriodicSleeveController):
     """Contracts sleeve bands in an additive sequential square-wave manner."""
-    def __init__(self, sleeve=None, period=2 * (1 + NUM_BANDS), duty=1 / (1 + NUM_BANDS),
-                 delay_per_band=2, min_pos=130, max_pos=50):
-        super().__init__(sleeve)
-        self.period = period
-        self.duty = duty
+    def __init__(self, sleeve_servos=None, period=2 * (2 + NUM_BANDS),
+                 base_duty=(1 - 1 / NUM_BANDS), delay_per_band=1 / (2 + NUM_BANDS),
+                 uncontracted_pos=130, contracted_pos=50):
+        super().__init__(uncontracted_pos, contracted_pos, period, sleeve_servos)
+        self.base_duty = base_duty
         self.delay_per_band = delay_per_band
-        self.min_pos = min_pos
-        self.max_pos = max_pos
 
-    def __time_since_cycle_start(self):
-        return self._time_since_produce_start() % self.period
-    def _get_position(self, servo_id):
-        adjusted_time = self.__time_since_cycle_start() - self.delay_per_band * servo_id
-        whether_contract = (adjusted_time < self.period and adjusted_time > self.duty * self.period)
-        return self.min_pos + (self.max_pos - self.min_pos) * int(whether_contract)
+    def _get_fractional_position(self, servo_id):
+        unadjusted_time = self._time_since_cycle_start()
+        return int(unadjusted_time - self.delay_per_band * self.period * servo_id > 0
+                   and unadjusted_time < self.base_duty * self.period)
 
-class IndependentSleeveController(SleeveController):
+class IndependentSleeveController(PeriodicSleeveController):
     """Contracts sleeve bands in an independent sequential square-wave manner."""
-    def __init__(self, sleeve=None, period=2.5 * (2 + NUM_BANDS), duty=1 / NUM_BANDS,
-                 delay_per_band=2, min_pos=130, max_pos=50):
-        super().__init__(sleeve)
-        self.period = period
+    def __init__(self, sleeve_servos=None, period=2.5 * (2 + NUM_BANDS), duty=1 / NUM_BANDS,
+                 delay_per_band=0.8 / (2 + NUM_BANDS), uncontracted_pos=130, contracted_pos=50):
+        super().__init__(uncontracted_pos, contracted_pos, period, sleeve_servos)
         self.duty = duty
         self.delay_per_band = delay_per_band
-        self.min_pos = min_pos
-        self.max_pos = max_pos
 
-    def __time_since_cycle_start(self):
-        return self._time_since_produce_start() % self.period
-    def _get_position(self, servo_id):
-        adjusted_time = self.__time_since_cycle_start() - self.delay_per_band * servo_id
-        whether_contract = (adjusted_time > 0 and adjusted_time < self.duty * self.period)
-        return self.min_pos + (self.max_pos - self.min_pos) * int(whether_contract)
+    def _get_fractional_position(self, servo_id):
+        adjusted_time = (self._time_since_cycle_start()
+                         - self.delay_per_band * self.period * servo_id)
+        return int(adjusted_time > 0 and adjusted_time < self.duty * self.period)
