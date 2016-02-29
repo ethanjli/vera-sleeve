@@ -3,6 +3,7 @@
 # Python imports
 import sys
 import os
+import logging
 
 # Dependency imports
 import pykka
@@ -12,10 +13,12 @@ from pyqtgraph.Qt import uic, QtGui
 # Package imports
 from verasleeve import leg, signal, plotting, gui
 
+logging.basicConfig(level=logging.INFO)
+
 _UI_LAYOUT_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'leg_monitor.ui')
 
-FLUID_PRESSURE_MIN = -20
-FLUID_PRESSURE_MAX = 100
+FLUID_PRESSURE_MIN = 0
+FLUID_PRESSURE_MAX = 25
 
 class LegMonitorPanel(QtGui.QMainWindow):
     def __init__(self, update_interval, filter_width, graph_width):
@@ -181,6 +184,7 @@ if __name__ == "__main__":
     pg.setConfigOptions(antialias=True, background='w', foreground='k')
     app = QtGui.QApplication(sys.argv)
     leg_monitor_panel = LegMonitorPanel(0.05, 40, 800)
+    app.aboutToQuit.connect(QtGui.QApplication.instance().quit)
     app.exec_()
     pykka.ActorRegistry.stop_all() # stop actors in LIFO order
     sys.exit()

@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Leg Model Monitor</string>
   </property>
+  <property name="windowIcon">
+   <iconset theme="utilities-system-monitor"/>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
