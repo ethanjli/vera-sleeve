@@ -50,7 +50,7 @@ class SleeveController(actors.Producer):
         super().__init__()
         if sleeve_servos is None:
             sleeve_servos = SleeveServos()
-        self.__sleeve_servos = sleeve_servos
+        self.sleeve_servos = sleeve_servos
         self.__produce_start_time = None
         self.uncontracted_pos = uncontracted_pos
         self.contracted_pos = contracted_pos
@@ -61,13 +61,17 @@ class SleeveController(actors.Producer):
         self.__produce_start_time = None
     def _on_produce(self):
         for servo_id in BAND_SERVO_IDS:
-            self.__sleeve_servos.set_servo_position(servo_id, self.__get_position(servo_id))
+            self.sleeve_servos.set_servo_position(servo_id, self.__get_position(servo_id))
     def __get_position(self, servo_id):
         return self.uncontracted_pos + int((self.contracted_pos - self.uncontracted_pos)
                                            * self._get_fractional_position(servo_id))
 
     def on_stop(self):
-        self.__sleeve_servos.quit()
+        if self.sleeve_servos is not None:
+            for servo_id in BAND_SERVO_IDS:
+                self.sleeve_servos.set_servo_position(servo_id, self.uncontracted_pos)
+            time.sleep(0.25)
+            self.sleeve_servos.quit()
 
     def _time_since_produce_start(self):
         return time.time() - self.__produce_start_time
@@ -93,13 +97,13 @@ class AdditiveSleeveController(PeriodicSleeveController):
                  base_duty=(1 - 1 / NUM_BANDS), delay_per_band=1 / (2 + NUM_BANDS),
                  uncontracted_pos=130, contracted_pos=50):
         super().__init__(uncontracted_pos, contracted_pos, period, sleeve_servos)
-        self.base_duty = base_duty
+        self.duty = base_duty
         self.delay_per_band = delay_per_band
 
     def _get_fractional_position(self, servo_id):
         unadjusted_time = self._time_since_cycle_start()
         return int(unadjusted_time - self.delay_per_band * self.period * servo_id > 0
-                   and unadjusted_time < self.base_duty * self.period)
+                   and unadjusted_time < self.duty * self.period)
 
 class IndependentSleeveController(PeriodicSleeveController):
     """Contracts sleeve bands in an independent sequential square-wave manner."""
