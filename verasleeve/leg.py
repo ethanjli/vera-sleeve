@@ -16,8 +16,8 @@ LOW_FLUID_SENSOR_PIN = 0
 HIGH_FLUID_SENSOR_PIN = 1
 
 # Default unit conversion functions for sensors
-LOW_FLUID_PRESSURE_RAW_TO_MMHG = lambda raw: (raw - 516.596) / 20.798
-HIGH_FLUID_PRESSURE_RAW_TO_MMHG = lambda raw: (raw - 101.185) / 1.313
+LOW_FLUID_PRESSURE_RAW_TO_MMHG = lambda raw: (raw - 516.596) / 8.188
+HIGH_FLUID_PRESSURE_RAW_TO_MMHG = lambda raw: (raw - 101.185) / 0.517
 LOW_HIGH_FLUID_PRESSURE_TRANSITION_RAW = 900 # raw value where the low fluid sensor is at its limit
 
 class Leg(object):
