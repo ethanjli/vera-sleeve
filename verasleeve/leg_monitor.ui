@@ -14,7 +14,8 @@
    <string>Leg Model Monitor</string>
   </property>
   <property name="windowIcon">
-   <iconset theme="utilities-system-monitor"/>
+   <iconset theme="utilities-system-monitor">
+    <normaloff>.</normaloff>.</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -82,6 +83,7 @@
    <addaction name="separator"/>
    <addaction name="actionStartMonitoring"/>
    <addaction name="actionStopMonitoring"/>
+   <addaction name="actionAdditionalPlots"/>
   </widget>
   <action name="actionExit">
    <property name="icon">
@@ -132,6 +134,20 @@
    </property>
    <property name="toolTip">
     <string>Start leg monitoring</string>
+   </property>
+  </action>
+  <action name="actionAdditionalPlots">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="utilities-system-monitor"/>
+   </property>
+   <property name="text">
+    <string>Additional Plots</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle whether to plot raw signal and min/max filtered signals</string>
    </property>
   </action>
  </widget>

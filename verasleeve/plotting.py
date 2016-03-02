@@ -16,6 +16,8 @@ class CurveUpdater(pykka.ThreadingActor):
             y axis value.
         Command (received):
             clear: clears the curve.
+            show: starts plotting the curve.
+            hide: clears and hides the curve.
     """
     def __init__(self, curve, max_samples=None):
         super().__init__()
@@ -23,6 +25,7 @@ class CurveUpdater(pykka.ThreadingActor):
         self.max_samples = max_samples
         self.curve_x = None
         self.curve_y = None
+        self.__plotting = True
         self.__clear_curve()
 
     def on_receive(self, message):
@@ -36,6 +39,12 @@ class CurveUpdater(pykka.ThreadingActor):
         """Processes command messages."""
         if message['command'] == 'clear':
             self.__clear_curve()
+        elif message['command'] == 'show':
+            self.__plotting = True
+            self.curve.setData(self.curve_x, self.curve_y)
+        elif message['command'] == 'hide':
+            self.__plotting = False
+            self.__clear_curve()
 
     def __on_data(self, message):
         """Processes data messages."""
@@ -43,7 +52,8 @@ class CurveUpdater(pykka.ThreadingActor):
         sample = message['data']
         self.curve_x.append(sample_time)
         self.curve_y.append(sample)
-        self.curve.setData(self.curve_x, self.curve_y)
+        if self.__plotting:
+            self.curve.setData(self.curve_x, self.curve_y)
 
     def __clear_curve(self):
         """Clears the curve."""

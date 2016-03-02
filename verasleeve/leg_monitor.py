@@ -49,6 +49,7 @@ class LegMonitorPanel(QtGui.QMainWindow):
         self.__ui.actionStartMonitoring.triggered.connect(self.__start_monitoring)
         self.__ui.actionStopMonitoring.setDisabled(True)
         self.__ui.actionStopMonitoring.triggered.connect(self.__stop_monitoring)
+        self.__ui.actionAdditionalPlots.toggled.connect(self.__toggle_additional_plots)
 
     def __init_graphs(self):
         self.__graphs = {
@@ -57,7 +58,7 @@ class LegMonitorPanel(QtGui.QMainWindow):
         for (_, graph) in self.__graphs.items():
             graph.disableAutoRange(axis=pg.ViewBox.YAxis)
             graph.setLabels(bottom="Time (s)", left="Pin Value (0-1024)")
-            graph.addLegend()
+            #graph.addLegend()
         self.__graphs['fluid pressure'].getViewBox().setYRange(FLUID_PRESSURE_MIN,
                                                                FLUID_PRESSURE_MAX)
         self.__graphs['fluid pressure'].setTitle("Fluid Pressure, Top of Vein")
@@ -75,14 +76,14 @@ class LegMonitorPanel(QtGui.QMainWindow):
         }
 
     def __init_curve_updaters(self, graph_width):
-        curve_types = {
+        self.__curve_types = {
             'raw': {
                 'pen': 'r',
                 'name': 'Raw'
             },
             'denoised': {
                 'pen': 'k',
-                'name': 'Denoised'
+                'name': 'Pressure'
             },
             'max': {
                 'pen': 'g',
@@ -100,9 +101,11 @@ class LegMonitorPanel(QtGui.QMainWindow):
             'min': {}
         }
         for name in self._sensors:
-            for (curve_type, curve_props) in curve_types.items():
+            for (curve_type, curve_props) in self.__curve_types.items():
                 curve = self.__graphs[name].plot(pen=curve_props['pen'], name=curve_props['name'])
                 curve_updater = plotting.CurveUpdater.start(curve, graph_width)
+                if curve_type != 'denoised':
+                    curve_updater.tell({'command': 'hide'})
                 self.__curve_updaters[curve_type][name] = curve_updater
 
     def __init_label_updaters(self):
@@ -179,6 +182,16 @@ class LegMonitorPanel(QtGui.QMainWindow):
                 filterer = self.__filterers[filter_type][name]
                 filterer.proxy().deregister(self.__curve_updaters[filter_type][name], name)
                 filterer.proxy().deregister(self.__label_updaters[filter_type][name], name)
+
+    def __toggle_additional_plots(self, show_additional):
+        for curve_type in self.__curve_types:
+            if curve_type != 'denoised':
+                for name in self._sensors:
+                    curve_updater = self.__curve_updaters[curve_type][name]
+                    if show_additional:
+                        curve_updater.tell({'command': 'show'})
+                    else:
+                        curve_updater.tell({'command': 'hide'})
 
 if __name__ == "__main__":
     pg.setConfigOptions(antialias=True, background='w', foreground='k')
