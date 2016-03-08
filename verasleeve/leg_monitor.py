@@ -17,8 +17,10 @@ logging.basicConfig(level=logging.INFO)
 
 _UI_LAYOUT_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'leg_monitor.ui')
 
-FLUID_PRESSURE_MIN = 0
-FLUID_PRESSURE_MAX = 70
+TOP_FLUID_PRESSURE_MIN = 0
+TOP_FLUID_PRESSURE_MAX = 60
+BOTTOM_FLUID_PRESSURE_MIN = 30
+BOTTOM_FLUID_PRESSURE_MAX = 90
 
 class LegMonitorPanel(QtGui.QMainWindow):
     def __init__(self, update_interval, filter_width, graph_width):
@@ -31,7 +33,7 @@ class LegMonitorPanel(QtGui.QMainWindow):
         self._sensors = {'fluid pressure'}
         self._display_components = {
             'top fluid pressure': ('fluid pressure', 0),
-            #'bottom fluid pressure': ('fluid pressure', 1)
+            'bottom fluid pressure': ('fluid pressure', 1)
         }
 
         self.__init_graphs()
@@ -59,26 +61,33 @@ class LegMonitorPanel(QtGui.QMainWindow):
 
     def __init_graphs(self):
         self.__graphs = {
-            'top fluid pressure': self.__ui.fluidPlot.getPlotItem(),
+            'top fluid pressure': self.__ui.topFluidPlot.getPlotItem(),
+            'bottom fluid pressure': self.__ui.bottomFluidPlot.getPlotItem()
         }
         for (_, graph) in self.__graphs.items():
             graph.disableAutoRange(axis=pg.ViewBox.YAxis)
-            graph.setLabels(bottom="Time (s)", left="Pin Value (0-1024)")
             #graph.addLegend()
-        self.__graphs['top fluid pressure'].getViewBox().setYRange(FLUID_PRESSURE_MIN,
-                                                                   FLUID_PRESSURE_MAX)
-        self.__graphs['top fluid pressure'].setTitle("Fluid Pressure, Top of Vein")
+        self.__graphs['top fluid pressure'].getViewBox().setYRange(TOP_FLUID_PRESSURE_MIN,
+                                                                   TOP_FLUID_PRESSURE_MAX)
+        self.__graphs['top fluid pressure'].setTitle("Fluid Pressure Above Vein")
         self.__graphs['top fluid pressure'].setLabels(left="Pressure (mmHg)")
+        self.__graphs['bottom fluid pressure'].getViewBox().setYRange(BOTTOM_FLUID_PRESSURE_MIN,
+                                                                      BOTTOM_FLUID_PRESSURE_MAX)
+        self.__graphs['bottom fluid pressure'].setTitle("Fluid Pressure Below Vein")
+        self.__graphs['bottom fluid pressure'].setLabels(left="Pressure (mmHg)")
 
     def __init_labels(self):
         self.__denoised_labels = {
-            'top fluid pressure': self.__ui.fluidValue
+            'top fluid pressure': self.__ui.topFluidValue,
+            'bottom fluid pressure': self.__ui.bottomFluidValue
         }
         self.__max_labels = {
-            'top fluid pressure': self.__ui.fluidMax
+            'top fluid pressure': self.__ui.topFluidMax,
+            'bottom fluid pressure': self.__ui.bottomFluidMax
         }
         self.__min_labels = {
-            'top fluid pressure': self.__ui.fluidMin
+            'top fluid pressure': self.__ui.topFluidMin,
+            'bottom fluid pressure': self.__ui.bottomFluidMin
         }
 
     def __init_curve_updaters(self, graph_width):

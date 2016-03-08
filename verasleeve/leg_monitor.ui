@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>568</width>
-    <height>642</height>
+    <width>600</width>
+    <height>766</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,15 +18,15 @@
     <normaloff>.</normaloff>.</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout">
+   <layout class="QVBoxLayout" name="verticalLayout" stretch="50,50">
     <item>
-     <widget class="QGroupBox" name="groupBoxFluid">
+     <widget class="QGroupBox" name="groupBoxTopFluid">
       <property name="title">
-       <string>Fluid Sensor</string>
+       <string>Top of Vein</string>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="QFrame" name="frameFluidNumbers">
+        <widget class="QFrame" name="frameTopFluidNumbers">
          <property name="frameShape">
           <enum>QFrame::StyledPanel</enum>
          </property>
@@ -35,21 +35,21 @@
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
-           <widget class="QLabel" name="fluidValue">
+           <widget class="QLabel" name="topFluidValue">
             <property name="text">
              <string>Filtered: ???</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="fluidMin">
+           <widget class="QLabel" name="topFluidMin">
             <property name="text">
              <string>Min: ???</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="fluidMax">
+           <widget class="QLabel" name="topFluidMax">
             <property name="text">
              <string>Max: ???</string>
             </property>
@@ -59,7 +59,52 @@
         </widget>
        </item>
        <item>
-        <widget class="PlotWidget" name="fluidPlot"/>
+        <widget class="PlotWidget" name="topFluidPlot"/>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="groupBoxBottomFluid">
+      <property name="title">
+       <string>Bottom of Vein</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="QFrame" name="frameBottomFluidNumbers">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QLabel" name="bottomFluidValue">
+            <property name="text">
+             <string>Filtered: ???</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="bottomFluidMin">
+            <property name="text">
+             <string>Min: ???</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="bottomFluidMax">
+            <property name="text">
+             <string>Max: ???</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="PlotWidget" name="bottomFluidPlot"/>
        </item>
       </layout>
      </widget>
@@ -141,7 +186,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="utilities-system-monitor"/>
+    <iconset theme="utilities-system-monitor">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Additional Plots</string>
