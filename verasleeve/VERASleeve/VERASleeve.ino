@@ -9,11 +9,13 @@ Servo band1;
 Servo band2;
 Servo band3;
 
-const int kBand1Pin = 12;
-const int kBand2Pin = 11;
-const int kBand3Pin = 10;
-const int kInitialDelay = 5000;
-const int kAdjustmentInterval = 5000;
+const int kBand1Pin = 11;
+const int kBand2Pin = 10;
+const int kBand3Pin = 9;
+const int kInitializationDelay = 5000;
+const int kCyclePeriod = 10000;
+const int kDelayBetweenBands = 2000;
+const int kFirstBandDutyInterval = 6500;
 const int kServoMin = 50;
 const int kServoMax = 130;
 const int blinkPin = 13;
@@ -28,27 +30,27 @@ void setup() {
   band1.write(kServoMax);
   band2.write(kServoMax);
   band3.write(kServoMax);
-  delay(kInitialDelay / 2);
+  delay(kInitializationDelay / 2);
   digitalWrite(blinkPin, LOW);
-  delay(kInitialDelay / 2);
+  delay(kInitializationDelay / 2);
 }
 
 void loop() {
   digitalWrite(blinkPin, HIGH);
   band1.write(kServoMin);
-  delay(kAdjustmentInterval);
+  delay(kDelayBetweenBands);
 
   digitalWrite(blinkPin, LOW);
   band2.write(kServoMin);
-  delay(kAdjustmentInterval);
+  delay(kDelayBetweenBands);
   
   digitalWrite(blinkPin, HIGH);
   band3.write(kServoMin);
-  delay(kAdjustmentInterval);
+  delay(kFirstBandDutyInterval - 2 * kDelayBetweenBands);
 
   digitalWrite(blinkPin, LOW);
   band1.write(kServoMax);
   band2.write(kServoMax);
   band3.write(kServoMax);
-  delay(kAdjustmentInterval);
+  delay(kCyclePeriod - kFirstBandDutyInterval);
 }
