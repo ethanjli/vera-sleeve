@@ -128,6 +128,8 @@
    <addaction name="separator"/>
    <addaction name="actionStartMonitoring"/>
    <addaction name="actionStopMonitoring"/>
+   <addaction name="separator"/>
+   <addaction name="actionSaveScreenshot"/>
    <addaction name="actionAdditionalPlots"/>
   </widget>
   <action name="actionExit">
@@ -194,6 +196,18 @@
    </property>
    <property name="toolTip">
     <string>Toggle whether to plot raw signal and min/max filtered signals</string>
+   </property>
+  </action>
+  <action name="actionSaveScreenshot">
+   <property name="icon">
+    <iconset theme="camera-photo">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>Save Screenshot</string>
+   </property>
+   <property name="toolTip">
+    <string>Save a screenshot of the window</string>
    </property>
   </action>
  </widget>

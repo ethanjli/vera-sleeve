@@ -58,6 +58,7 @@ class LegMonitorPanel(QtGui.QMainWindow):
         self.__ui.actionStopMonitoring.triggered.connect(self.__stop_monitoring)
         self.__ui.actionAdditionalPlots.toggled.connect(self.__toggle_additional_plots)
         self.__ui.actionAdditionalPlots.setDisabled(True)
+        self.__ui.actionSaveScreenshot.triggered.connect(self.__screenshot)
 
     def __init_graphs(self):
         self.__graphs = {
@@ -213,6 +214,21 @@ class LegMonitorPanel(QtGui.QMainWindow):
                         curve_updater.tell({'command': 'show'})
                     else:
                         curve_updater.tell({'command': 'hide'})
+
+    def __screenshot(self):
+        image = QtGui.QImage(self.__ui.centralwidget.size(), QtGui.QImage.Format_RGB32)
+        painter = QtGui.QPainter(image)
+        self.__ui.centralwidget.render(painter)
+        save_dialog = QtGui.QFileDialog()
+        save_dialog.setWindowTitle("Save screenshot")
+        save_dialog.setAcceptMode(QtGui.QFileDialog.AcceptSave)
+        save_dialog.setNameFilter("PNG images (*.png)")
+        save_dialog.setDefaultSuffix('png')
+        if save_dialog.exec():
+            filename = save_dialog.selectedFiles()[0]
+            image.save(filename, format="PNG")
+            self.__ui.statusbar.showMessage("Saved screenshot to {}".format(filename))
+        painter.end()
 
 if __name__ == "__main__":
     pg.setConfigOptions(antialias=True, background='w', foreground='k')
