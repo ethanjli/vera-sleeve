@@ -123,16 +123,21 @@ class TupleSelector(actors.Broadcaster, pykka.ThreadingActor):
             the y axis values.
         Data (broadcasted):
             The type entry specifies the type of the data sample, and the data is broadcasted on
-            the channel named by that type.
+            the channel named by that type. If the TupleSelector's broadcast_channel property
+            is set to be not-None, the type entry is changed to be broadcast_channel and the data
+            is broadcasted over the broadcast_channel channel.
             The data sample will be a single value of the tuple, chosen by position from the
             actor's constructor argument.
     """
-    def __init__(self, tuple_position=0):
+    def __init__(self, tuple_position=0, broadcast_channel=None):
         super().__init__()
         self.tuple_position = tuple_position
+        self.broadcast_channel = broadcast_channel
 
     def on_receive(self, message):
         new_message = dict(message)
         new_message['data'] = message['data'][self.tuple_position]
-        self.broadcast(new_message, message['type'])
+        if self.broadcast_channel is not None:
+            new_message['type'] = self.broadcast_channel
+        self.broadcast(new_message, new_message['type'])
 
