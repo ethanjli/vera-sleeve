@@ -29,9 +29,15 @@ class Leg(object):
         if connection is None:
             try:
                 connection = nanpy.SerialManager()
-            except SerialException:
-                raise RuntimeError("Could not connect to the Arduino!") from None
-        self._board = nanpy.ArduinoApi(connection=connection)
+            except SerialManagerError:
+                raise RuntimeError("Could not open a serial connection!") from None
+        try:
+            self._board = nanpy.ArduinoApi(connection=connection)
+        except SerialException:
+            raise RuntimeError("Could not connect to the Arduino!") from None
+        except nanpy.classinfo.FirmwareError:
+            raise RuntimeError("Could not find correct Nanpy firmware on the Arduino!") from None
+        self.connection_device = connection.device
 
     def get_top_low_fluid_pressure_sensor(self):
         """Read from the sensitive (low-range) fluid pressure sensor above the vein."""
@@ -63,6 +69,7 @@ class LegMonitor(actors.Broadcaster, actors.Producer):
         if leg is None:
             leg = Leg()
         self.__leg = leg
+        self.connection_device = leg.connection_device
         self.__produce_start_time = None
 
     def _on_start_producing(self):

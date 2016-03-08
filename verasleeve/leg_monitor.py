@@ -43,10 +43,9 @@ class LegMonitorPanel(QtGui.QMainWindow):
         self.__init_label_updaters()
 
         self.__init_filters(filter_width, graph_width)
+        self.__init_unit_conversion()
 
         self.__monitor = None
-        self.__unit_converter = None
-        self.__tuple_selectors = {}
 
     def __init_window(self):
         # Actions
@@ -157,19 +156,27 @@ class LegMonitorPanel(QtGui.QMainWindow):
             self.__filterers['min'][name] = minimizer
             filterer.proxy().register(minimizer, name)
 
-    def __init_monitoring(self):
+    def __init_unit_conversion(self):
         self.__unit_converter = leg.LegUnitConverter.start()
+        self.__tuple_selectors = {}
         for (name, properties) in self._display_components.items():
             tuple_selector = signal.TupleSelector.start(properties[1], name)
             self.__unit_converter.proxy().register(tuple_selector, properties[0])
             tuple_selector.proxy().register(self.__filterers['denoised'][name],
                                             name)
             self.__tuple_selectors[name] = tuple_selector
+
+    def __init_monitoring(self):
+        self.__ui.statusbar.showMessage("Connecting...")
         try:
-            self.__monitor = leg.LegMonitor.start()
-        except RuntimeError:
-            pykka.ActorRegistry.stop_all() # stop actors in LIFO order
-            raise
+            monitor = leg.LegMonitor.start()
+            self.__monitor = monitor
+        except RuntimeError as e:
+            self.__ui.statusbar.showMessage(str(e))
+            logging.error(e, exc_info=True)
+            return
+        self.__ui.statusbar.showMessage("Established connection over "
+                                        "{}".format(monitor.proxy().connection_device.get()))
         for name in self._sensors:
             self.__monitor.proxy().register(self.__unit_converter, name)
         self.__ui.actionConnect.setDisabled(True)

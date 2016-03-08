@@ -51,10 +51,16 @@ class SleevePanel(QtGui.QMainWindow):
         self.__ui.contractedSpinBox.setDisabled(True)
 
     def __init_controllers(self):
+        self.__ui.statusbar.showMessage("Connecting...")
         try:
-            self.__sleeve_servos = sleeve.SleeveServos()
-        except RuntimeError:
-            raise
+            sleeve_servos = sleeve.SleeveServos()
+            self.__sleeve_servos = sleeve_servos
+        except RuntimeError as e:
+            self.__ui.statusbar.showMessage(str(e))
+            logging.error(e, exc_info=True)
+            return
+        self.__ui.statusbar.showMessage("Established connection over "
+                                        "{}".format(sleeve_servos.connection_device))
         self._controllers['Additive'] = sleeve.AdditiveSleeveController.start(self.__sleeve_servos)
         self._controllers['Independent'] = sleeve.IndependentSleeveController.start(self.__sleeve_servos)
         self._active_controller = 'Additive'

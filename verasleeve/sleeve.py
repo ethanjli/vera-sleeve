@@ -25,10 +25,16 @@ class SleeveServos(object):
             try:
                 connection = nanpy.SerialManager()
             except SerialException:
-                raise RuntimeError("Could not connect to the Arduino!") from None
+                raise RuntimeError("Could not open a serial connection!") from None
         self.__connection = connection
-        self.__band_servos = [nanpy.Servo(servo_pin, connection)
-                              for servo_pin in BAND_SERVO_PINS]
+        try:
+            self.__band_servos = [nanpy.Servo(servo_pin, connection)
+                                  for servo_pin in BAND_SERVO_PINS]
+        except SerialException:
+            raise RuntimeError("Could not connect to the Arduino!") from None
+        except nanpy.classinfo.FirmwareError:
+            raise RuntimeError("Could not find correct Nanpy firmware on the Arduino!") from None
+        self.connection_device = connection.device
 
     def set_servo_position(self, servo_id, position):
         """Changes the position of the specified servo."""
@@ -51,6 +57,7 @@ class SleeveController(actors.Producer):
         if sleeve_servos is None:
             sleeve_servos = SleeveServos()
         self.sleeve_servos = sleeve_servos
+        self.connection_device = sleeve_servos.connection_device
         self.__produce_start_time = None
         self.uncontracted_pos = uncontracted_pos
         self.contracted_pos = contracted_pos
