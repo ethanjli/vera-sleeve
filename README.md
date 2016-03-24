@@ -40,3 +40,18 @@ For example, to run the `blink` test:
 ```sh
 python -m verasleeve.tests.blink
 ```
+Note that you may need to replace `python` with the executable name of python 3 on your distribution. On Arch Linux, this is just `python`, but on other distributions, this may be something like `python3`.
+
+### Leg Model Test Fixture Monitor
+The panel to monitor sensor data from the leg model should be run from the root directory of the package, and can be run as follows:
+```sh
+python -m verasleeve.leg_monitor
+```
+This will open a window. You should press the connect button to connect to the Arduino on the test fixture. If the connection is successful, the program will immediately begin streaming sensor data onto the display plots and labels. You can pause (and reset) and resume data streaming with the corresponding toolbar buttons. You can also save a screenshot of the window with the corresponding toolbar button, though you may prefer to save an individual plot by right-clicking on it to access the PyQtGraph-provied contextual menu. Finally, you can toggle whether to show only the noise-filtered sensor signals or also to show the raw signal and the min/max signals (which correspond to the min and max values displayed in text labels).
+
+### Sleeve Control Panel
+The panel to drive contractions of the VERA sleeve should be run from the root directory of the package, and can be run as follows:
+```sh
+python -m verasleeve.sleeve_panel
+```
+This will open a window. You should press the connect button to connect to the Arduino on the VERA sleeve. If the connection is successful, the program will immediately begin driving contraction patterns on the VERA sleeve. You can adjust parameters, and you can also pause and unpause the contraction pattern. Note that, if you also want to run the leg model test fixture monitor, you may need to run that program and connect to the test fixture's Arduino before running the sleeve control panel program and connecting to the VERA sleeve's Arduino.
