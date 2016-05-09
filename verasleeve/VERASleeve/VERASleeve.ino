@@ -9,9 +9,9 @@ Servo band1;
 Servo band2;
 Servo band3;
 
-const int kBand1Pin = 11;
+const int kBand1Pin = 9;
 const int kBand2Pin = 10;
-const int kBand3Pin = 9;
+const int kBand3Pin = 11;
 const int kInitializationDelay = 5000;
 const int kCyclePeriod = 10000;
 const int kDelayBetweenBands = 2000;
