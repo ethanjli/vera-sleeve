@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Monitors the fluid pressure sensor reading."""
+"""Controls the contraction pattern and parameters on the leg sleeve."""
 # Python imports
 import sys
 import os
